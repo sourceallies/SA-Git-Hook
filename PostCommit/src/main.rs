@@ -11,7 +11,7 @@ use crate::ResponseState::{Running, Success, Failed};
 static TIMEOUT_DURATION: Duration = Duration::from_secs(3);
 static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 struct DiffStats {
     files_changed: u32,
     insertions: u32,
@@ -27,7 +27,7 @@ impl DiffStats {
         let insertions = get_number_from_diff(&mut diff_output)?;
         let deletions = get_number_from_diff(&mut diff_output)?;
 
-        Ok(DiffStats { files_changed, insertions, deletions })
+        Ok(DiffStats { files_changed, insertions, deletions, email: String::new() })
     }
     fn to_json(&self) -> String {
         format!("{{ \"files_changed\": {}, \"insertions\": {}, \"deletions\": {} }}", self.files_changed, self.insertions, self.deletions)
@@ -91,7 +91,6 @@ fn post_to_remote(stats: &DiffStats) {
     let start_time = Instant::now();
     loop {
         if start_time.elapsed() > TIMEOUT_DURATION {
-            println!("POST to remote timed out");
             break;
         }
         let state = response_state.lock().unwrap();

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SA-Git-Hook.iml" filepath="$PROJECT_DIR$/.idea/SA-Git-Hook.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PostCommit.iml" filepath="$PROJECT_DIR$/.idea/PostCommit.iml" />
     </modules>
   </component>
 </project>
