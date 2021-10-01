@@ -1,9 +1,10 @@
 mod util;
 use std::process::Command;
 use std::error::Error;
+use std::f32::consts::E;
 use std::str::{FromStr, Split};
 use std::num::ParseIntError;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::thread;
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
@@ -49,6 +50,9 @@ fn get_number_from_diff(split: &mut Split<char>) -> Result<u32, ParseIntError> {
 
 fn run_git_cmd(cmd: &mut Command) -> Result<DiffStats, Box<dyn Error>> {
     let output = cmd.output()?;
+    if !output.status.success() {
+        Err("Failed to Get Diff From Git")?;
+    }
     let output_str = String::from_utf8(output.stdout)?;
 
     DiffStats::from_string(output_str)
@@ -123,8 +127,6 @@ fn post_to_remote(stats: DiffStats, config: Config) {
         break;
     }
 }
-
-
 
 fn main() {
     let config = match Config::read_from_config() {
