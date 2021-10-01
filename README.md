@@ -18,3 +18,4 @@
 
 Copy the post-commit executable (<path-to-this-dir>/Hookstaller/target/release/post-commit) into the `.git/hooks`
 directory of a given repo.
+
