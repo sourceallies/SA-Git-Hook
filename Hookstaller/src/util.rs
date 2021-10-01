@@ -2,6 +2,7 @@ use std::error::Error;
 use std::io::{Write, BufWriter, BufReader, BufRead};
 use std::fs::File;
 
+//TODO: Create timeout for config file that we can use as a duration for waiting to get success.
 pub struct Config {
     pub team_name: String,
     pub source_allies_email: String
