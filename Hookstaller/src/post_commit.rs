@@ -1,4 +1,5 @@
 mod util;
+
 use std::process::Command;
 use std::error::Error;
 use std::f32::consts::E;
@@ -24,10 +25,16 @@ struct DiffStats {
 impl DiffStats {
     fn from_string(s: String) -> Result<DiffStats, Box<dyn Error>> {
         let mut diff_output = s.trim().split(',');
+        let mut files_changed = 0;
+        let mut  insertions = 0;
+        let mut deletions = 0;
+        //  1 file changed, 1 insertion(+), 1 deletion(-)
+        for split in diff_output {
+            check_log_output(&mut files_changed, split, "changed")?;
+            check_log_output(&mut insertions, split, "insertion")?;
+            check_log_output(&mut deletions, split, "deletion")?;
+        }
 
-        let files_changed = get_number_from_diff(&mut diff_output)?;
-        let insertions = get_number_from_diff(&mut diff_output)?;
-        let deletions = get_number_from_diff(&mut diff_output)?;
 
         Ok(DiffStats { files_changed, insertions, deletions })
     }
@@ -39,13 +46,15 @@ impl Display for DiffStats {
     }
 }
 
-fn get_number_from_diff(split: &mut Split<char>) -> Result<u32, ParseIntError> {
-    u32::from_str(split.next()
-        .unwrap()
-        .trim()
-        .split(' ')
-        .next()
-        .unwrap())
+fn check_log_output(variable: &mut u32, split: &str, key: &str) -> Result<(), ParseIntError> {
+    if split.contains(key) {
+        *variable = u32::from_str(split
+            .trim()
+            .split(' ')
+            .next()
+            .unwrap())?;
+    }
+    Ok(())
 }
 
 fn run_git_cmd(cmd: &mut Command) -> Result<DiffStats, Box<dyn Error>> {
@@ -63,10 +72,10 @@ fn run_git_cmd(cmd: &mut Command) -> Result<DiffStats, Box<dyn Error>> {
 enum ResponseState {
     Running,
     Failed,
-    Success
+    Success,
 }
 
-fn generate_json_key_value_string<K: Display, V: Display >(key: K, value: V ) -> String {
+fn generate_json_key_value_string<K: Display, V: Display>(key: K, value: V) -> String {
     format!("\"{}\": {}", key, value)
 }
 
@@ -116,7 +125,7 @@ fn post_to_remote(stats: DiffStats, config: Config) {
         }
         let state = response_state.lock().unwrap();
         let is_running = matches!(*state, Running);
-        let state_str = format!("{:?}",&state);
+        let state_str = format!("{:?}", &state);
         drop(state);
 
         if is_running {
