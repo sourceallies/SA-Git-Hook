@@ -71,7 +71,6 @@ fn value_string<V: Display>(value: V) -> String {
 }
 
 fn stats_and_config_to_json(stats: &DiffStats, config: &Config) -> String {
-    //format!("{{ \"files_changed\": {}, \"insertions\": {}, \"deletions\": {}, \"source_allies_email\": {}, \"team_name\": {} }}")
     format!("{{ {}, {}, {}, {}, {} }}",
             generate_json_key_value_string("files_changed", stats.files_changed),
             generate_json_key_value_string("insertions", stats.insertions),

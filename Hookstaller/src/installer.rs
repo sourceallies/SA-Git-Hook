@@ -3,18 +3,23 @@
 mod util;
 use std::error::Error;
 use std::process::Command;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs;
+use std::str::FromStr;
 use crate::util::{check_y_n, get_input, Config};
 
 // git config --global core.hooksPath /path/to/my/centralized/hooks
 fn install_git_hook() -> Result<(), Box<dyn Error>> {
     let should_apply_globally = check_y_n(get_input("Should this hook be installed globally? (Y|N)")?);
-    let post_commit_executable_path = "../PostCommit/target/release/post-commit";
+    let mut post_commit_executable_path = PathBuf::new();
+    post_commit_executable_path.push("target");
+    post_commit_executable_path.push("release");
+    post_commit_executable_path.push("post-commit");
+    println!("post_commit_executable_path {}", post_commit_executable_path.to_str().unwrap());
+
     if should_apply_globally {
         let mut git_cmd = Command::new("git");
-        // todo: get path to post-commit executable
-        let args = vec!["config", "--global", "core.hooksPath", post_commit_executable_path];
+        let args = vec!["config", "--global", "core.hooksPath", post_commit_executable_path.to_str().unwrap()];
         git_cmd.args(args);
     } else {
         loop {
@@ -25,12 +30,22 @@ fn install_git_hook() -> Result<(), Box<dyn Error>> {
             if repo_dir == "" {
                 continue;
             }
-            // Check repo_directory for .git/hooks folder
 
-            let hooks_dir = match repo_dir.ends_with('/') { true => repo_dir, false => repo_dir + "/" } + ".git/hooks/";
-            if Path::new(&hooks_dir).exists() {
-                // TODO: Place "post-commit" binary inside folder
-                fs::copy(post_commit_executable_path, hooks_dir)?;
+            // Check repo_directory for .git/hooks folder
+            println!("Before git_hooks_path");
+            let mut git_hooks_path = PathBuf::new();
+            git_hooks_path.push(".git");
+            git_hooks_path.push("hooks");
+            println!("pushed git_hooks_path {}", git_hooks_path.to_str().unwrap());
+
+            let mut hooks_dir = PathBuf::from_str(&repo_dir)?;
+            hooks_dir.push(git_hooks_path);
+            println!("hooks_dir {}", hooks_dir.to_str().unwrap());
+
+            if hooks_dir.exists() {
+                hooks_dir.push("post-commit");
+                println!("post_commit_executable_path {}", post_commit_executable_path.to_str().unwrap());
+                fs::copy(post_commit_executable_path.as_path(), hooks_dir)?;
             } else {
                 println!("Given directory is not a git repository.");
             }

@@ -9,7 +9,6 @@ pub struct Config {
 
 pub static CONFIG_FILE_NAME: &str =  "/.sai_git_hook_config";
 
-#[allow(dead_code)]
 pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
     print!("{} ", prompt.as_ref());
     std::io::stdout().flush()?;
@@ -18,11 +17,11 @@ pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
     let input = input.trim().to_string();
     Ok(input)
 }
+
 #[allow(dead_code)]
 pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
     s.as_ref().to_lowercase() == "y"
 }
-
 
 #[allow(dead_code)]
 impl Config {
@@ -52,7 +51,7 @@ impl Config {
         let mut writer = BufWriter::new(file);
 
         let message = format!("team_name={}\nsource_allies_email={}\n", self.team_name, self.source_allies_email);
-        print!("config {}", message);
+        print!("Config:\n{}", message);
         writer.write_all(message.as_bytes())?;
 
         Ok(())
@@ -65,7 +64,7 @@ impl Config {
     fn get_value_from_config_reader(reader: &mut BufReader<File>) -> Result<String, Box<dyn Error>> {
         let mut value = String::new();
         reader.read_line(&mut value)?;
-        let value = value.split('=').take(2).next().unwrap().to_string();
+        let value = value.trim().split('=').skip(1).next().unwrap().to_string();
         Ok(value)
     }
 }
