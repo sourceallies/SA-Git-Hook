@@ -11,17 +11,21 @@ use crate::util::{check_y_n, get_input, Config};
 // git config --global core.hooksPath /path/to/my/centralized/hooks
 fn install_git_hook() -> Result<(), Box<dyn Error>> {
     let should_apply_globally = check_y_n(get_input("Should this hook be installed globally? (Y|N)")?);
-    let mut post_commit_executable_path = PathBuf::new();
-    post_commit_executable_path.push("target");
-    post_commit_executable_path.push("release");
-    post_commit_executable_path.push("post-commit");
-    println!("post_commit_executable_path {}", post_commit_executable_path.to_str().unwrap());
 
     if should_apply_globally {
+        let mut exec_path = std::env::current_dir()?;
+        exec_path.push("target");
+        exec_path.push("release");
         let mut git_cmd = Command::new("git");
-        let args = vec!["config", "--global", "core.hooksPath", post_commit_executable_path.to_str().unwrap()];
+        let args = vec!["config", "--global", "core.hooksPath", exec_path.to_str().unwrap()];
         git_cmd.args(args);
+        git_cmd.output()?;
     } else {
+        let mut post_commit_executable_path = PathBuf::new();
+        post_commit_executable_path.push("target");
+        post_commit_executable_path.push("release");
+        post_commit_executable_path.push("post-commit");
+        println!("post_commit_executable_path {}", post_commit_executable_path.to_str().unwrap());
         loop {
             let repo_dir = get_input("What is an absolute path to a git repo? (Press q and enter to quit.)")?;
             if repo_dir == "q" {
