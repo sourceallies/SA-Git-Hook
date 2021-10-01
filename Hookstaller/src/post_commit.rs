@@ -1,3 +1,4 @@
+mod util;
 use std::process::Command;
 use std::error::Error;
 use std::str::{FromStr, Split};
@@ -7,6 +8,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
+use crate::util::Config;
 
 static TIMEOUT_DURATION: Duration = Duration::from_secs(3);
 static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
@@ -16,7 +18,6 @@ struct DiffStats {
     files_changed: u32,
     insertions: u32,
     deletions: u32,
-    email: String
 }
 
 impl DiffStats {
@@ -27,10 +28,7 @@ impl DiffStats {
         let insertions = get_number_from_diff(&mut diff_output)?;
         let deletions = get_number_from_diff(&mut diff_output)?;
 
-        Ok(DiffStats { files_changed, insertions, deletions, email: String::new() })
-    }
-    fn to_json(&self) -> String {
-        format!("{{ \"files_changed\": {}, \"insertions\": {}, \"deletions\": {} }}", self.files_changed, self.insertions, self.deletions)
+        Ok(DiffStats { files_changed, insertions, deletions })
     }
 }
 
@@ -64,14 +62,34 @@ enum ResponseState {
     Success
 }
 
-fn post_to_remote(stats: &DiffStats) {
-    let stats = stats.clone();
+fn generate_json_key_value_string<K: Display, V: Display >(key: K, value: V ) -> String {
+    format!("\"{}\": {}", key, value)
+}
+
+fn value_string<V: Display>(value: V) -> String {
+    format!("\"{}\"", value)
+}
+
+fn stats_and_config_to_json(stats: &DiffStats, config: &Config) -> String {
+    //format!("{{ \"files_changed\": {}, \"insertions\": {}, \"deletions\": {}, \"source_allies_email\": {}, \"team_name\": {} }}")
+    format!("{{ {}, {}, {}, {}, {} }}",
+            generate_json_key_value_string("files_changed", stats.files_changed),
+            generate_json_key_value_string("insertions", stats.insertions),
+            generate_json_key_value_string("deletions", stats.deletions),
+            generate_json_key_value_string("team_name", value_string(&config.team_name)),
+            generate_json_key_value_string("source_allies_email", value_string(&config.source_allies_email)),
+    )
+}
+
+fn post_to_remote(stats: DiffStats, config: Config) {
     let response_state = Arc::new(Mutex::new(Running));
 
     let inside_response_state = Arc::clone(&response_state);
     thread::spawn(move || {
         let client = reqwest::blocking::Client::new();
-        let response = client.post(ENDPOINT).body(stats.to_json()).send();
+        let body = stats_and_config_to_json(&stats, &config);
+        println!("body {}", body);
+        let response = client.post(ENDPOINT).body(stats_and_config_to_json(&stats, &config)).send();
         match response {
             Ok(r) => {
                 let status = r.status();
@@ -107,7 +125,17 @@ fn post_to_remote(stats: &DiffStats) {
     }
 }
 
+
+
 fn main() {
+    let config = match Config::read_from_config() {
+        Ok(cfg) => cfg,
+        Err(e) => {
+            println!("Invalid Config: {}", e);
+            return;
+        }
+    };
+
     let mut git_cmd = Command::new("git");
     let args = vec!["diff", "--shortstat", "HEAD^", "HEAD"];
     git_cmd.args(args);
@@ -117,7 +145,7 @@ fn main() {
             println!("Error: {}", e);
         }
         Ok(stats) => {
-            post_to_remote(&stats);
+            post_to_remote(stats, config);
         }
     }
 }

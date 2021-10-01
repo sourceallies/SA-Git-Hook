@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/PostCommit.iml" filepath="$PROJECT_DIR$/.idea/PostCommit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Hookstaller.iml" filepath="$PROJECT_DIR$/.idea/Hookstaller.iml" />
     </modules>
   </component>
 </project>
