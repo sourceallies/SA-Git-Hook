@@ -8,11 +8,15 @@ use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
 
+static TIMEOUT_DURATION: Duration = Duration::from_secs(3);
+static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
+
 #[derive(Copy, Clone)]
 struct DiffStats {
     files_changed: u32,
     insertions: u32,
     deletions: u32,
+    email: String
 }
 
 impl DiffStats {
@@ -67,7 +71,7 @@ fn post_to_remote(stats: &DiffStats) {
     let inside_response_state = Arc::clone(&response_state);
     thread::spawn(move || {
         let client = reqwest::blocking::Client::new();
-        let response = client.post("https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs").body(stats.to_json()).send();
+        let response = client.post(ENDPOINT).body(stats.to_json()).send();
         match response {
             Ok(r) => {
                 let status = r.status();
@@ -85,9 +89,8 @@ fn post_to_remote(stats: &DiffStats) {
         }
     });
     let start_time = Instant::now();
-    let timeout_duration = Duration::from_secs(3);
     loop {
-        if start_time.elapsed() > timeout_duration {
+        if start_time.elapsed() > TIMEOUT_DURATION {
             println!("POST to remote timed out");
             break;
         }
