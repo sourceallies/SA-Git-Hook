@@ -3,7 +3,12 @@ use std::error::Error;
 use std::str::{FromStr, Split};
 use std::num::ParseIntError;
 use std::fmt::{Display, Formatter};
+use std::thread;
+use std::time::{Duration, Instant};
+use std::sync::{Arc, Mutex};
+use crate::ResponseState::{Running, Success, Failed};
 
+#[derive(Copy, Clone)]
 struct DiffStats {
     files_changed: u32,
     insertions: u32,
@@ -47,6 +52,59 @@ fn run_git_cmd(cmd: &mut Command) -> Result<DiffStats, Box<dyn Error>> {
     DiffStats::from_string(output_str)
 }
 
+#[allow(dead_code)]
+#[derive(Debug)]
+enum ResponseState {
+    Running,
+    Failed,
+    Success
+}
+
+fn post_to_remote(stats: &DiffStats) {
+    let stats = stats.clone();
+    let response_state = Arc::new(Mutex::new(Running));
+
+    let inside_response_state = Arc::clone(&response_state);
+    thread::spawn(move || {
+        let client = reqwest::blocking::Client::new();
+        let response = client.post("https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs").body(stats.to_json()).send();
+        match response {
+            Ok(r) => {
+                let status = r.status();
+                println!("{}, {}", status.as_str(), r.text().unwrap());
+                if status.is_success() {
+                    *inside_response_state.lock().unwrap() = Success;
+                } else {
+                    *inside_response_state.lock().unwrap() = Failed;
+                }
+            }
+            Err(err) => {
+                println!("Error: {}", err);
+                *inside_response_state.lock().unwrap() = Failed;
+            }
+        }
+    });
+    let start_time = Instant::now();
+    let timeout_duration = Duration::from_secs(3);
+    loop {
+        if start_time.elapsed() > timeout_duration {
+            println!("POST to remote timed out");
+            break;
+        }
+        let state = response_state.lock().unwrap();
+        let is_running = matches!(*state, Running);
+        let state_str = format!("{:?}",&state);
+        drop(state);
+
+        if is_running {
+            thread::sleep(Duration::from_millis(100));
+            continue;
+        }
+        println!("{:?}", state_str);
+        break;
+    }
+}
+
 fn main() {
     let mut git_cmd = Command::new("git");
     let args = vec!["diff", "--shortstat", "HEAD^", "HEAD"];
@@ -57,7 +115,7 @@ fn main() {
             println!("Error: {}", e);
         }
         Ok(stats) => {
-            println!("stats: {}", stats.to_json());
+            post_to_remote(&stats);
         }
     }
 }
