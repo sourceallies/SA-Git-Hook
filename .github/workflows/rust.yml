@@ -9,6 +9,8 @@ jobs:
   compile:
     name: release ${{ matrix.target }}
     runs-on: ubuntu-latest
+    env:
+      working-directory: Hookstaller/
     strategy:
       fail-fast: false
       matrix:
@@ -21,6 +23,7 @@ jobs:
       - name: Compile
         env:
           RUSTTARGET: ${{ matrix.target }}
+        working-directory: ${{ env.working-directory }}
         run: |
           cargo install cross
           cd Hookstaller
@@ -29,8 +32,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: $RUSTTARGET
-          path: Hookstaller/target/$RUSTTARGET/release
+          name: ${{ matrix.target }}
+          path: Hookstaller/target/${{ matrix.target }}/release
   release:
     name: release
     needs: compile
