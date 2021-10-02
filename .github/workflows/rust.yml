@@ -14,11 +14,8 @@ jobs:
       matrix:
         include:
           - target: x86_64-pc-windows-gnu
-            archive: zip
           - target: x86_64-unknown-linux-musl
-            archive: tar.gz tar.xz
           #- target: x86_64-apple-darwin
-          #  archive: zip
     steps:
       - uses: actions/checkout@master
       - name: Compile
@@ -28,7 +25,7 @@ jobs:
           cargo install cross
           cd Hookstaller
           cross build --release --target $RUSTTARGET
-          ls -a
+          ls -a target
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
@@ -46,5 +43,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${{ github.event.inputs.release_version }} --notes "" --prerelease
-          gh release upload ${{ github.event.inputs.release_version }} .x86_64-pc-windows-gnu/*.exe,./x86_64-unknown-linux-musl/post-commit,./x86_64-unknown-linux-musl/installer
+          gh release upload ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/*.exe,x86_64-unknown-linux-musl/post-commit,x86_64-unknown-linux-musl/installer
 
