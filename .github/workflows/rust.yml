@@ -42,6 +42,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ github.event.inputs.release_version }} --notes "" --prerelease
-          gh release upload ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/*.exe,x86_64-unknown-linux-musl/post-commit,x86_64-unknown-linux-musl/installer
-
+          pwd
+          ls
+          gh release create ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/release/*.exe,x86_64-unknown-linux-musl/release/post-commit,x86_64-unknown-linux-musl/release/installer --notes "" --prerelease
