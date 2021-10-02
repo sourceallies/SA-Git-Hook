@@ -1,5 +1,40 @@
 # SA Git Hook
 
+SA Git Hook is a [post commit hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) that sends commit stats to
+lambda that is used to populate a commit stats leaderboard.
+
+## Collected Data
+
+### Config
+
+- Source Allies Email
+- Source Allies Team name
+
+### Commit Stats
+
+- Number of insertions from a commit
+- Number of deletions from a commit
+- Number of files changed
+- Language of the files changed
+
+Example payload
+
+```json
+{
+  "config": {
+    "email": "email@sourceallies.com",
+    "team": "team name"
+  },
+  "stats": [
+    {
+      "insertions": 12,
+      "deletions": 28,
+      "extension": ".rs"
+    },
+  ]
+}
+```
+
 ## Install
 
 ### Requirements
@@ -13,8 +48,8 @@
 __Windows users:__ Do the following in a Git Bash terminal
 
 1. Clone this repo
-2. In the _Hookstaller_ directory, run the __install.sh__ script 
-   1. `./install.sh`
+2. In the _Hookstaller_ directory, run the __install.sh__ script
+    1. `./install.sh`
 3. Follow the steps given in the prompt
 
 #### Manual install for a specific repo
