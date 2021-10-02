@@ -47,4 +47,11 @@ jobs:
           ls x86_64-pc-windows-gnu
           echo "linux ls"
           ls x86_64-unknown-linux-musl
-          gh release create ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/post-commit.exe,x86_64-pc-windows-gnu/installer.exe,x86_64-unknown-linux-musl/post-commit,x86_64-unknown-linux-musl/installer --notes "" --prerelease
+          gh release create ${{ github.event.inputs.release_version }} --notes "" --prerelease
+          # x86_64-pc-windows-gnu/post-commit.exe,x86_64-pc-windows-gnu/installer.exe
+          # x86_64-unknown-linux-musl/post-commit,x86_64-unknown-linux-musl/installer 
+          gh release upload ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/post-commit.exe
+          gh release upload ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/post-commit.exe
+          gh release upload ${{ github.event.inputs.release_version }} x86_64-unknown-linux-musl/post-commit
+          gh release upload ${{ github.event.inputs.release_version }} x86_64-unknown-linux-musl/installer
+
