@@ -7,13 +7,11 @@ on:
 
 jobs:
   release:
-    name: release ${{ matrix.target }}
+    name: Release {{ github.events.inputs.release_version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - name: Compile and release
-        env:
-          RUSTTARGET: ${{ matrix.target }}
         run: |
           cargo install cross
           cd Hookstaller
