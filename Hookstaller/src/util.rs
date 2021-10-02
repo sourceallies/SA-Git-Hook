@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::io::{Write, BufWriter, BufReader, BufRead};
 use std::fs::File;
+use std::path::PathBuf;
 
 //TODO: Create timeout for config file that we can use as a duration for waiting to get success.
 pub struct Config {
@@ -8,7 +9,7 @@ pub struct Config {
     pub username: String
 }
 
-pub static CONFIG_FILE_NAME: &str =  "/.sai_git_hook_config";
+pub static CONFIG_FILE_NAME: &str =  ".sai_git_hook_config";
 
 #[allow(dead_code)]
 pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
@@ -48,8 +49,10 @@ impl Config {
         Ok(())
     }
 
-    fn get_config_file_path() -> String {
-        dirs::home_dir().unwrap().to_str().unwrap().to_string() + "/" + CONFIG_FILE_NAME
+    fn get_config_file_path() -> PathBuf {
+        let mut config_file_path = dirs::home_dir().unwrap();
+        config_file_path.push(CONFIG_FILE_NAME);
+        config_file_path
     }
 
     fn get_value_from_config_reader(reader: &mut BufReader<File>) -> Result<String, Box<dyn Error>> {

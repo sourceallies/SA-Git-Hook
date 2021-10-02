@@ -28,11 +28,6 @@ struct DiffStats {
 
 impl DiffStats {
 
-    // Insertions Deletions FileName
-    // 0       2       Hookstaller/src/installer.rs
-    // 19      11      Hookstaller/src/post_commit.rs
-    // 0       1       Hookstaller/src/util.rs
-    // 34      2       README.md
     fn from_git_cmd() -> Result<DiffStats, Box<dyn Error>> {
         let mut git_cmd = Command::new("git");
         let args = vec!["diff", "--numstat", "HEAD^", "HEAD"];
