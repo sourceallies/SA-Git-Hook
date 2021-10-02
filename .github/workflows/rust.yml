@@ -43,6 +43,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pwd
+          echo "windows ls"
           ls x86_64-pc-windows-gnu
+          echo "linux ls"
           ls x86_64-unknown-linux-musl
-          gh release create ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/*.exe,x86_64-unknown-linux-musl/post-commit,x86_64-unknown-linux-musl/installer --notes "" --prerelease
+          gh release create ${{ github.event.inputs.release_version }} x86_64-pc-windows-gnu/post-commit.exe,x86_64-pc-windows-gnu/installer.exe,x86_64-unknown-linux-musl/post-commit,x86_64-unknown-linux-musl/installer --notes "" --prerelease
