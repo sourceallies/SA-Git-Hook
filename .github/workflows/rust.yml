@@ -27,7 +27,8 @@ jobs:
         run: |
           cargo install cross
           cd Hookstaller
-          cross build --release --target $RUSTTARGET 
+          cross build --release --target $RUSTTARGET
+          ls -a
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
