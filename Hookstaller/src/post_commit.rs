@@ -14,7 +14,7 @@ use crate::util::Config;
 use std::collections::HashSet;
 
 //TODO: Make timeout in config file and also endpoint
-static TIMEOUT_DURATION: Duration = Duration::from_secs(1);
+static TIMEOUT_DURATION: Duration = Duration::from_secs(3);
 static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
 
 
@@ -80,7 +80,8 @@ impl DiffStats {
                         *inside_response_state.lock().unwrap() = Failed;
                     }
                 }
-                Err(_) => {
+                Err(e) => {
+                    println_log(format!("{}", e));
                     *inside_response_state.lock().unwrap() = Failed;
                 }
             }
