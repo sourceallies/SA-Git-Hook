@@ -22,7 +22,7 @@ jobs:
       - name: Compile and release
         env:
           RUSTTARGET: ${{ matrix.target }}
-        run: cargo install cross && cd Hookstaller && cross build --release --target $RUSTTARGET
+        run: rustup target add x86_64-apple-darwin && cargo install cross && cd Hookstaller && cross build --release --target $RUSTTARGET
         
 
         
