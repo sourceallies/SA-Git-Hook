@@ -7,8 +7,8 @@ lambda that is used to populate a commit stats leaderboard.
 
 ### Config
 
-- Source Allies Email
-- Source Allies Team name
+- Username
+- Team name
 
 ### Commit Stats
 
