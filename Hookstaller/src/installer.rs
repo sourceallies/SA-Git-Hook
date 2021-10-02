@@ -19,10 +19,12 @@ fn install_git_hook() -> Result<(), Box<dyn Error>> {
         git_cmd.args(args);
         git_cmd.output()?;
     } else {
+        let os = env::consts::OS;
+        let post_commit_file = match os { "windows" => "post-commit.exe", _ => "post-commit" };
         let mut post_commit_executable_path = PathBuf::new();
         post_commit_executable_path.push("target");
         post_commit_executable_path.push("release");
-        post_commit_executable_path.push("post-commit");
+        post_commit_executable_path.push(post_commit_file);
         loop {
             let repo_dir = get_installer_input("What is an absolute path to a git repo? (Press q and enter to quit.)")?;
             if repo_dir == "q" {
@@ -41,8 +43,6 @@ fn install_git_hook() -> Result<(), Box<dyn Error>> {
             hooks_dir.push(git_hooks_path);
 
             if hooks_dir.exists() {
-                let os = env::consts::OS;
-                let post_commit_file = match os { "windows" => "post-commit.exe", _ => "post-commit" };
                 hooks_dir.push(post_commit_file);
                 println_log(format!("Installing from {} to {}", post_commit_executable_path.to_str().unwrap(), hooks_dir.to_str().unwrap()));
                 fs::copy(post_commit_executable_path.as_path(), hooks_dir)?;
