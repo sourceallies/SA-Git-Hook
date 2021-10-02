@@ -21,17 +21,12 @@ Example payload
 
 ```json
 {
-  "config": {
-    "email": "email@sourceallies.com",
-    "team": "team name"
-  },
-  "stats": [
-    {
-      "insertions": 12,
-      "deletions": 28,
-      "extension": ".rs"
-    },
-  ]
+  "username": "test username",
+  "team_name": "team name",
+  "insertions": 12,
+  "deletions": 28,
+  "files_changed": 3,
+  "extension": [".rs", ".yaml"]
 }
 ```
 
