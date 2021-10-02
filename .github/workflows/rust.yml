@@ -19,12 +19,11 @@ jobs:
             archive: zip
     steps:
       - uses: actions/checkout@master
-      - uses: actions-hub/docker@master
+      - name: Install docker
+        run: brew install docker docker-machine
       - name: Compile and release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUSTTARGET: ${{ matrix.target }}
-          ARCHIVE_TYPES: ${{ matrix.archive }}
         run: cargo install cross && cd Hookstaller && cross build --release --target $RUSTTARGET
         
 
