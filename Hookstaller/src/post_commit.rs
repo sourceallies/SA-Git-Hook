@@ -111,7 +111,7 @@ impl DiffStats {
         let os = env::consts::OS;
         let file_name = splits.next().unwrap().rsplit(match os { "windows" => '\\', _ => '/' }).next().unwrap();
         if file_name.contains('.') {
-            return Some(file_name.rsplit('.').next().unwrap().to_string());
+            return Some(format!(".{}", file_name.rsplit('.').next().unwrap()));
         }
         return None
     }
@@ -123,7 +123,7 @@ impl DiffStats {
                 generate_json_key_value_string("deletions", self.deletions),
                 generate_json_key_value_string("extensions", self.extensions_to_string()),
                 generate_json_key_value_string("team_name", value_string(&config.team_name)),
-                generate_json_key_value_string("username", value_string(&config.email)),
+                generate_json_key_value_string("username", value_string(&config.username)),
         )
     }
 
@@ -181,6 +181,5 @@ fn main() {
             return;
         }
     };
-
-    println!("{}", stats.to_json(&config));
+    stats.post_to_remote(config);
 }

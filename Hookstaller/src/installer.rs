@@ -73,11 +73,11 @@ fn println_log<S: AsRef<str>>(output: S) {
 
 fn create_from_input() -> Result<Config, Box<dyn Error>> {
     let team_name = get_installer_input("What is your Team Name?")?;
-    let email = get_installer_input("What is your Source Allies Email?")?;
+    let username = get_installer_input("What is your Username?")?;
 
     Ok(Config {
         team_name,
-        email
+        username
     })
 }
 

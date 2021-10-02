@@ -5,7 +5,7 @@ use std::fs::File;
 //TODO: Create timeout for config file that we can use as a duration for waiting to get success.
 pub struct Config {
     pub team_name: String,
-    pub email: String
+    pub username: String
 }
 
 pub static CONFIG_FILE_NAME: &str =  "/.sai_git_hook_config";
@@ -33,7 +33,7 @@ impl Config {
 
         Ok(Config {
             team_name: Config::get_value_from_config_reader(&mut reader)?,
-            email: Config::get_value_from_config_reader(&mut reader)?
+            username: Config::get_value_from_config_reader(&mut reader)?
         })
     }
 
@@ -42,7 +42,7 @@ impl Config {
 
         let mut writer = BufWriter::new(file);
 
-        let message = format!("team_name={}\nemail={}\n", self.team_name, self.email);
+        let message = format!("team_name={}\nusername={}\n", self.team_name, self.username);
         writer.write_all(message.as_bytes())?;
 
         Ok(())
