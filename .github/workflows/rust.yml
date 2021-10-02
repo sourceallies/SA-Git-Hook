@@ -6,7 +6,7 @@ on:
 jobs:
   release:
     name: release ${{ matrix.target }}
-    runs-on: macos-11
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
@@ -19,6 +19,7 @@ jobs:
             archive: zip
     steps:
       - uses: actions/checkout@master
+      - uses: actions-hub/docker@master
       - name: Compile and release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
