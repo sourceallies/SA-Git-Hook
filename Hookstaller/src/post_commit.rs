@@ -12,7 +12,8 @@ use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
 use crate::util::Config;
 
-static TIMEOUT_DURATION: Duration = Duration::from_secs(3);
+//TODO: Make timeout in config file and also endpoint
+static TIMEOUT_DURATION: Duration = Duration::from_secs(1);
 static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
 
 #[derive(Clone)]
@@ -98,21 +99,19 @@ fn post_to_remote(stats: DiffStats, config: Config) {
     let inside_response_state = Arc::clone(&response_state);
     thread::spawn(move || {
         let client = reqwest::blocking::Client::new();
-        let body = stats_and_config_to_json(&stats, &config);
-        println!("body {}", body);
+
+        println_log("Sent Diff Stats");
         let response = client.post(ENDPOINT).body(stats_and_config_to_json(&stats, &config)).send();
         match response {
             Ok(r) => {
                 let status = r.status();
-                println!("{}, {}", status.as_str(), r.text().unwrap());
                 if status.is_success() {
                     *inside_response_state.lock().unwrap() = Success;
                 } else {
                     *inside_response_state.lock().unwrap() = Failed;
                 }
             }
-            Err(err) => {
-                println!("Error: {}", err);
+            Err(_) => {
                 *inside_response_state.lock().unwrap() = Failed;
             }
         }
@@ -124,23 +123,33 @@ fn post_to_remote(stats: DiffStats, config: Config) {
         }
         let state = response_state.lock().unwrap();
         let is_running = matches!(*state, Running);
-        let state_str = format!("{:?}", &state);
         drop(state);
 
         if is_running {
             thread::sleep(Duration::from_millis(100));
             continue;
         }
-        println!("{:?}", state_str);
         break;
     }
+}
+
+fn log_format<S: AsRef<str>>(output: S) -> String {
+    format!("[Git-Hook]: {}", output.as_ref())
+}
+
+fn println_error<S: AsRef<str>>(output: S) {
+    println!("\\e[1;96;127m{}\\e[0m\n", log_format(output));
+}
+
+fn println_log<S: AsRef<str>>(output: S) {
+    println!("{}", log_format(output));
 }
 
 fn main() {
     let config = match Config::read_from_config() {
         Ok(cfg) => cfg,
         Err(e) => {
-            println!("Invalid Config: {}", e);
+            println_error(format!("Invalid Config: {}", e));
             return;
         }
     };
@@ -151,7 +160,7 @@ fn main() {
 
     match run_git_cmd(&mut git_cmd) {
         Err(e) => {
-            println!("Error: {}", e);
+            println_error(format!("Error: {}", e));
         }
         Ok(stats) => {
             post_to_remote(stats, config);

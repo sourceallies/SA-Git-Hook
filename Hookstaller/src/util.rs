@@ -43,7 +43,6 @@ impl Config {
         let mut writer = BufWriter::new(file);
 
         let message = format!("team_name={}\nemail={}\n", self.team_name, self.email);
-        print!("Config:\n{}", message);
         writer.write_all(message.as_bytes())?;
 
         Ok(())
