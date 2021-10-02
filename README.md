@@ -49,8 +49,8 @@ __Windows users:__ Do the following in a Git Bash terminal
 1. In the _Hookstaller_ directory, run the __install.sh__ script
 
     ```bash
-    cd SA-Git-Hook
-    ./Hookstaller/install.sh
+    cd SA-Git-Hook/Hookstaller
+    ./install.sh
     ```
 
 1. Follow the steps given in the prompt
