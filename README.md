@@ -25,6 +25,7 @@ Example payload
   "team_name": "team name",
   "insertions": 12,
   "deletions": 28,
+  "files_changed": 3,
   "extension": [".rs", ".yaml"]
 }
 ```
