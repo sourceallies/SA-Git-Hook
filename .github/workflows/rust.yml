@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: $RUSTTARGET
-          path: ./target/$RUSTTARGET/release
+          path: Hookstaller/target/$RUSTTARGET/release
   release:
     name: release
     needs: compile
