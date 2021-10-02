@@ -29,14 +29,6 @@ jobs:
           cd Hookstaller
           cross build --release --target $RUSTTARGET
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.events.inputs.release_version }}
-          release_name: ${{ github.events.inputs.release_version }}
-          prerelease: true
-      - name: Push to release
-        run: gh release upload ${{ github.events.inputs.release_version }} ./target/release/*
+        run: gh release create ${{ github.events.inputs.release_version }} ./target/release/* --pre-release
 
         
