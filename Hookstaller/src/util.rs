@@ -29,17 +29,17 @@ pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
 #[allow(dead_code)]
 impl Config {
     pub fn read_from_config() -> Result<Self, Box<dyn Error>> {
-        let file = File::open(&Config::get_config_file_path())?;
+        let file = File::open(&Config::config_file_path())?;
         let mut reader = BufReader::new(file);
 
         Ok(Config {
-            team_name: Config::get_value_from_config_reader(&mut reader)?,
-            username: Config::get_value_from_config_reader(&mut reader)?
+            team_name: Config::value_from_config_reader(&mut reader)?,
+            username: Config::value_from_config_reader(&mut reader)?
         })
     }
 
     pub fn save_to_file(&self) -> Result<(), Box<dyn Error>> {
-        let file = File::create(&Config::get_config_file_path())?;
+        let file = File::create(&Config::config_file_path())?;
 
         let mut writer = BufWriter::new(file);
 
@@ -48,14 +48,13 @@ impl Config {
 
         Ok(())
     }
-
-    fn get_config_file_path() -> PathBuf {
+    fn config_file_path() -> PathBuf {
         let mut config_file_path = dirs::home_dir().unwrap();
         config_file_path.push(CONFIG_FILE_NAME);
         config_file_path
     }
 
-    fn get_value_from_config_reader(reader: &mut BufReader<File>) -> Result<String, Box<dyn Error>> {
+    fn value_from_config_reader(reader: &mut BufReader<File>) -> Result<String, Box<dyn Error>> {
         let mut value = String::new();
         reader.read_line(&mut value)?;
         let value = value.trim().split('=').skip(1).next().unwrap().to_string();

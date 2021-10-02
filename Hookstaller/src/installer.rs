@@ -7,6 +7,7 @@ use std::env;
 use std::str::FromStr;
 use crate::util::{check_y_n, get_input, Config};
 
+
 fn install_git_hook() -> Result<(), Box<dyn Error>> {
     let should_apply_globally = check_y_n(get_installer_input("Should this hook be installed globally? (Y|N)")?);
 
