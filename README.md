@@ -23,7 +23,7 @@ Example payload
 {
   "username": "test username",
   "team_name": "team name",
-  "insertions": 12,
+  "insertions": 13,
   "deletions": 28,
   "files_changed": 3,
   "extension": [".rs", ".yaml"]

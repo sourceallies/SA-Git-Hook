@@ -3,8 +3,8 @@ mod util;
 use std::process::Command;
 use std::error::Error;
 
-use std::str::{FromStr, Split, SplitWhitespace};
-use std::num::ParseIntError;
+use std::str::{FromStr, SplitWhitespace};
+
 use std::fmt::{Debug, Display, Formatter};
 use std::{thread, env};
 use std::time::{Duration, Instant};
