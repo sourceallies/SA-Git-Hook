@@ -6,7 +6,7 @@ on:
 jobs:
   release:
     name: release ${{ matrix.target }}
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -19,8 +19,6 @@ jobs:
             archive: zip
     steps:
       - uses: actions/checkout@master
-      - name: Install docker
-        run: brew install docker docker-machine
       - name: Compile and release
         env:
           RUSTTARGET: ${{ matrix.target }}
