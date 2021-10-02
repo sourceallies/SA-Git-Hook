@@ -2,8 +2,8 @@ mod util;
 
 use std::process::Command;
 use std::error::Error;
-use std::f32::consts::E;
-use std::str::{FromStr, Split};
+
+use std::str::{FromStr};
 use std::num::ParseIntError;
 use std::fmt::{Debug, Display, Formatter};
 use std::thread;
@@ -24,7 +24,7 @@ struct DiffStats {
 
 impl DiffStats {
     fn from_string(s: String) -> Result<DiffStats, Box<dyn Error>> {
-        let mut diff_output = s.trim().split(',');
+        let diff_output = s.trim().split(',');
         let mut files_changed = 0;
         let mut  insertions = 0;
         let mut deletions = 0;
@@ -89,7 +89,7 @@ fn stats_and_config_to_json(stats: &DiffStats, config: &Config) -> String {
             generate_json_key_value_string("insertions", stats.insertions),
             generate_json_key_value_string("deletions", stats.deletions),
             generate_json_key_value_string("team_name", value_string(&config.team_name)),
-            generate_json_key_value_string("source_allies_email", value_string(&config.source_allies_email)),
+            generate_json_key_value_string("email", value_string(&config.email)),
     )
 }
 

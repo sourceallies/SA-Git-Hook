@@ -5,11 +5,12 @@ use std::fs::File;
 //TODO: Create timeout for config file that we can use as a duration for waiting to get success.
 pub struct Config {
     pub team_name: String,
-    pub source_allies_email: String
+    pub email: String
 }
 
 pub static CONFIG_FILE_NAME: &str =  "/.sai_git_hook_config";
 
+#[allow(dead_code)]
 pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
     print!("{} ", prompt.as_ref());
     std::io::stdout().flush()?;
@@ -26,23 +27,13 @@ pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
 
 #[allow(dead_code)]
 impl Config {
-    pub fn create_from_input() -> Result<Self, Box<dyn Error>> {
-        let team_name = get_input("What is your Source Allies team name?")?;
-        let source_allies_email = get_input("What is your Source Allies email?")?;
-
-        Ok(Config {
-            team_name,
-            source_allies_email
-        })
-    }
-
     pub fn read_from_config() -> Result<Self, Box<dyn Error>> {
         let file = File::open(&Config::get_config_file_path())?;
         let mut reader = BufReader::new(file);
 
         Ok(Config {
             team_name: Config::get_value_from_config_reader(&mut reader)?,
-            source_allies_email: Config::get_value_from_config_reader(&mut reader)?
+            email: Config::get_value_from_config_reader(&mut reader)?
         })
     }
 
@@ -51,7 +42,7 @@ impl Config {
 
         let mut writer = BufWriter::new(file);
 
-        let message = format!("team_name={}\nsource_allies_email={}\n", self.team_name, self.source_allies_email);
+        let message = format!("team_name={}\nemail={}\n", self.team_name, self.email);
         print!("Config:\n{}", message);
         writer.write_all(message.as_bytes())?;
 
