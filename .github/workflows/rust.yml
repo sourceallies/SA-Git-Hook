@@ -1,7 +1,9 @@
-# .github/workflows/release.yml
-
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version"
+        required: true
 
 jobs:
   release:
@@ -15,14 +17,26 @@ jobs:
             archive: zip
           - target: x86_64-unknown-linux-musl
             archive: tar.gz tar.xz
-          - target: x86_64-apple-darwin
-            archive: zip
+          #- target: x86_64-apple-darwin
+          #  archive: zip
     steps:
       - uses: actions/checkout@master
-      - name: Compile and release
+      - name: Compile
         env:
           RUSTTARGET: ${{ matrix.target }}
-        run: rustup target add x86_64-apple-darwin && cargo install cross && cd Hookstaller && cross build --release --target $RUSTTARGET
-        
+        run: |
+          cargo install cross
+          cd Hookstaller
+          cross build --release --target $RUSTTARGET
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.events.inputs.release_version }}
+          release_name: ${{ github.events.inputs.release_version }}
+          prerelease: true
+      - name: Push to release
+        run: gh release upload ${{ github.events.inputs.release_version }} ./target/release/*
 
         
