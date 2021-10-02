@@ -1,0 +1,49 @@
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version"
+        required: true
+
+jobs:
+  compile:
+    name: release ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-gnu
+            archive: zip
+          - target: x86_64-unknown-linux-musl
+            archive: tar.gz tar.xz
+          #- target: x86_64-apple-darwin
+          #  archive: zip
+    steps:
+      - uses: actions/checkout@master
+      - name: Compile
+        env:
+          RUSTTARGET: ${{ matrix.target }}
+        run: |
+          cargo install cross
+          cd Hookstaller
+          cross build --release --target $RUSTTARGET 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: $RUSTTARGET
+          path: ./target/$RUSTTARGET/release
+  release:
+    name: release
+    needs: compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts from compile job
+        uses: actions/download-artifact@v2
+      - name: Create release and artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.events.inputs.release_version }} --notes "" --prerelease
+          gh release upload ${{ github.events.inputs.release_version }} .x86_64-pc-windows-gnu/*.exe,./x86_64-unknown-linux-musl/post-commit,./x86_64-unknown-linux-musl/installer
+

@@ -7,8 +7,8 @@ lambda that is used to populate a commit stats leaderboard.
 
 ### Config
 
-- Source Allies Email
-- Source Allies Team name
+- Username
+- Team name
 
 ### Commit Stats
 
@@ -23,10 +23,13 @@ Example payload
 {
   "username": "test username",
   "team_name": "team name",
-  "insertions": 12,
+  "insertions": 13,
   "deletions": 28,
   "files_changed": 3,
-  "extension": [".rs", ".yaml"]
+  "extension": [
+    ".rs",
+    ".yaml"
+  ]
 }
 ```
 
@@ -59,3 +62,14 @@ Copy the post-commit executable (`/Hookstaller/target/release/post-commit`) to t
   ```bash
   cp ./Hookstaller/target/release/post-commit $(YOUR_REPO_NAME)/.git/hooks)
   ```
+
+## Uninstall
+
+### If installed globally
+
+Run `git config --global --unset core.hooksPath`
+
+### Per repository
+
+Remove the `post-commit` executable in the `.git/hooks/` directory in the repository you would like to remove the hook
+from.

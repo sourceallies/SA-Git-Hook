@@ -1,14 +1,15 @@
 use std::error::Error;
 use std::io::{Write, BufWriter, BufReader, BufRead};
 use std::fs::File;
+use std::path::PathBuf;
 
 //TODO: Create timeout for config file that we can use as a duration for waiting to get success.
 pub struct Config {
     pub team_name: String,
-    pub email: String
+    pub username: String
 }
 
-pub static CONFIG_FILE_NAME: &str =  "/.sai_git_hook_config";
+pub static CONFIG_FILE_NAME: &str =  ".sai_git_hook_config";
 
 #[allow(dead_code)]
 pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
@@ -28,31 +29,32 @@ pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
 #[allow(dead_code)]
 impl Config {
     pub fn read_from_config() -> Result<Self, Box<dyn Error>> {
-        let file = File::open(&Config::get_config_file_path())?;
+        let file = File::open(&Config::config_file_path())?;
         let mut reader = BufReader::new(file);
 
         Ok(Config {
-            team_name: Config::get_value_from_config_reader(&mut reader)?,
-            email: Config::get_value_from_config_reader(&mut reader)?
+            team_name: Config::value_from_config_reader(&mut reader)?,
+            username: Config::value_from_config_reader(&mut reader)?
         })
     }
 
     pub fn save_to_file(&self) -> Result<(), Box<dyn Error>> {
-        let file = File::create(&Config::get_config_file_path())?;
+        let file = File::create(&Config::config_file_path())?;
 
         let mut writer = BufWriter::new(file);
 
-        let message = format!("team_name={}\nemail={}\n", self.team_name, self.email);
+        let message = format!("team_name={}\nusername={}\n", self.team_name, self.username);
         writer.write_all(message.as_bytes())?;
 
         Ok(())
     }
-
-    fn get_config_file_path() -> String {
-        dirs::home_dir().unwrap().to_str().unwrap().to_string() + "/" + CONFIG_FILE_NAME
+    fn config_file_path() -> PathBuf {
+        let mut config_file_path = dirs::home_dir().unwrap();
+        config_file_path.push(CONFIG_FILE_NAME);
+        config_file_path
     }
 
-    fn get_value_from_config_reader(reader: &mut BufReader<File>) -> Result<String, Box<dyn Error>> {
+    fn value_from_config_reader(reader: &mut BufReader<File>) -> Result<String, Box<dyn Error>> {
         let mut value = String::new();
         reader.read_line(&mut value)?;
         let value = value.trim().split('=').skip(1).next().unwrap().to_string();
