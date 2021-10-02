@@ -1,0 +1,22 @@
+name: Rust
+
+on:
+  workflow_dispatch
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_release:
+    name: Build and release
+    runs-on: macos-11
+    steps:
+      - name: Install cross
+        run: cargo install cross
+      - name: Build Windows
+        run: cd Hookstaller && cross build --release --target x86_64-pc-windows-gnu
+      - name: Build macOS
+        run: cross build --release --target x86_64-apple-darwin
+      - name: Build ARM Linux
+        run: cross build --release --target arm-unknown-linux-gnueabihf
+
