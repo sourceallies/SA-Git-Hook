@@ -26,7 +26,10 @@ Example payload
   "insertions": 13,
   "deletions": 28,
   "files_changed": 3,
-  "extension": [".rs", ".yaml"]
+  "extension": [
+    ".rs",
+    ".yaml"
+  ]
 }
 ```
 
@@ -51,3 +54,14 @@ __Windows users:__ Do the following in a Git Bash terminal
 
 Copy the post-commit executable (<path-to-this-dir>/Hookstaller/target/release/post-commit) into the `.git/hooks`
 directory of a given repo.
+
+## Uninstall
+
+### If installed globally
+
+Run `git config --global --unset core.hooksPath`
+
+### Per repository
+
+Remove the `post-commit` executable in the `.git/hooks/` directory in the repository you would like to remove the hook
+from.
