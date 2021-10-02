@@ -1,22 +1,31 @@
-name: Rust
+# .github/workflows/release.yml
 
 on:
   workflow_dispatch
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build_and_release:
-    name: Build and release
-    runs-on: macos-11
+  release:
+    name: release ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-gnu
+            archive: zip
+          - target: x86_64-unknown-linux-musl
+            archive: tar.gz tar.xz
+          - target: x86_64-apple-darwin
+            archive: zip
     steps:
-      - name: Install cross
-        run: cargo install cross
-      - name: Build Windows
-        run: cd Hookstaller && cross build --release --target x86_64-pc-windows-gnu
-      - name: Build macOS
-        run: cross build --release --target x86_64-apple-darwin
-      - name: Build ARM Linux
-        run: cross build --release --target arm-unknown-linux-gnueabihf
+      - uses: actions/checkout@master
+      - name: Compile and release
+        uses: rust-build/rust-build.action@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUSTTARGET: ${{ matrix.target }}
+          ARCHIVE_TYPES: ${{ matrix.archive }}
+        run: cargo install cross && cd Hookstaller && cross build --release --target $RUSTTARGET
+        
 
+        
