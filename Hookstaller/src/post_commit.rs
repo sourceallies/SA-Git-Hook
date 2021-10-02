@@ -3,7 +3,7 @@ mod util;
 use std::process::Command;
 use std::error::Error;
 
-use std::str::{FromStr};
+use std::str::{FromStr, Split};
 use std::num::ParseIntError;
 use std::fmt::{Debug, Display, Formatter};
 use std::thread;
@@ -16,27 +16,58 @@ use crate::util::Config;
 static TIMEOUT_DURATION: Duration = Duration::from_secs(1);
 static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
 
+
 #[derive(Clone)]
 struct DiffStats {
     files_changed: u32,
-    insertions: u32,
     deletions: u32,
+    insertions: u32,
+    extensions: Vec<String>,
 }
 
 impl DiffStats {
-    fn from_string(s: String) -> Result<DiffStats, Box<dyn Error>> {
-        let diff_output = s.trim().split(',');
-        let mut files_changed = 0;
-        let mut  insertions = 0;
+
+    // Insertions Deletions FileName
+    // 0       2       Hookstaller/src/installer.rs
+    // 19      11      Hookstaller/src/post_commit.rs
+    // 0       1       Hookstaller/src/util.rs
+    // 34      2       README.md
+    fn from_git_cmd() -> Result<DiffStats, Box<dyn Error>> {
+        let mut git_cmd = Command::new("git");
+        let args = vec!["diff", "--numstat", "HEAD^", "HEAD"];
+        git_cmd.args(args);
+
+        let output = git_cmd.output()?;
+        if !output.status.success() {
+            Err("Failed to Get Diff From Git")?;
+        }
+        let mut extensions = Vec::new();
+        let mut insertions = 0;
         let mut deletions = 0;
-        for split in diff_output {
-            check_log_output(&mut files_changed, split, "changed")?;
-            check_log_output(&mut insertions, split, "insertion")?;
-            check_log_output(&mut deletions, split, "deletion")?;
+        let mut files_changed = 0;
+
+        let output_str = String::from_utf8(output.stdout)?;
+
+        for line in output_str.trim().lines() {
+            let mut splits = line.trim().split(' ');
+            insertions += u32::from_str(splits.next().unwrap())?;
+            deletions += u32::from_str(splits.next().unwrap())?;
+            let file_extension = DiffStats::get_file_extension(&mut splits);
+            println!("file extension {}", file_extension);
+            extensions.push(file_extension);
+            files_changed += 1;
         }
 
+        Ok(DiffStats {
+            files_changed,
+            deletions,
+            insertions,
+            extensions
+        })
+    }
 
-        Ok(DiffStats { files_changed, insertions, deletions })
+    fn get_file_extension(splits: &mut Split<char>) -> String {
+        splits.next().unwrap().to_string().rsplit('.').next().unwrap().to_string()
     }
 }
 
@@ -55,16 +86,6 @@ fn check_log_output(variable: &mut u32, split: &str, key: &str) -> Result<(), Pa
             .unwrap())?;
     }
     Ok(())
-}
-
-fn run_git_cmd(cmd: &mut Command) -> Result<DiffStats, Box<dyn Error>> {
-    let output = cmd.output()?;
-    if !output.status.success() {
-        Err("Failed to Get Diff From Git")?;
-    }
-    let output_str = String::from_utf8(output.stdout)?;
-
-    DiffStats::from_string(output_str)
 }
 
 #[allow(dead_code)]
@@ -154,16 +175,18 @@ fn main() {
         }
     };
 
-    let mut git_cmd = Command::new("git");
-    let args = vec!["diff", "--shortstat", "HEAD^", "HEAD"];
-    git_cmd.args(args);
+    let mut stats = DiffStats::from_git_cmd();
 
-    match run_git_cmd(&mut git_cmd) {
-        Err(e) => {
-            println_error(format!("Error: {}", e));
-        }
-        Ok(stats) => {
-            post_to_remote(stats, config);
-        }
-    }
+    // let mut git_cmd = Command::new("git");
+    // let args = vec!["diff", "--shortstat", "HEAD^", "HEAD"];
+    // git_cmd.args(args);
+    //
+    // match run_git_cmd(&mut git_cmd) {
+    //     Err(e) => {
+    //         println_error(format!("Error: {}", e));
+    //     }
+    //     Ok(stats) => {
+    //         post_to_remote(stats, config);
+    //     }
+    // }
 }
