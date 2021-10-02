@@ -1,5 +1,3 @@
-
-// $ setup-sai-hooks
 mod util;
 use std::error::Error;
 use std::process::Command;

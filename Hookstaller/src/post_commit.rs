@@ -28,7 +28,6 @@ impl DiffStats {
         let mut files_changed = 0;
         let mut  insertions = 0;
         let mut deletions = 0;
-        //  1 file changed, 1 insertion(+), 1 deletion(-)
         for split in diff_output {
             check_log_output(&mut files_changed, split, "changed")?;
             check_log_output(&mut insertions, split, "insertion")?;
