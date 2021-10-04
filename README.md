@@ -3,6 +3,10 @@
 SA Git Hook is a [post commit hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) that sends commit stats to
 lambda that is used to populate a commit stats leaderboard.
 
+## Disclaimer: __Do not use with other organizations commits without explicit approval__
+
+This hook will send traffic to a url upon each local commit. Security analysis may find that this git metadata could be used to identify repos, partners, file types, and languages. When consulting, __do not use this hook on client computers nor client repos__ without having a conversation and receiving explicit permission.
+
 ## Collected Data
 
 ### Config
