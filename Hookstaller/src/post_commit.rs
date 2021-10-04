@@ -162,7 +162,7 @@ fn println_log<S: AsRef<str>>(output: S) {
 }
 
 fn main() {
-    let config = match Config::read_from_config() {
+    let config = match Config::read_config() {
         Ok(cfg) => cfg,
         Err(e) => {
             println_log(format!("Invalid Config: {}", e));

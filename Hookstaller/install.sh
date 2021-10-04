@@ -1,4 +1,9 @@
 #!/bin/bash
 
 cargo build --release
-./target/release/installer
+CUR_DIR="$(pwd)"
+cd target/release/ || exit
+
+./installer
+
+cd "${CUR_DIR}" || exit

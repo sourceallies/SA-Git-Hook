@@ -9,7 +9,7 @@ pub struct Config {
     pub username: String
 }
 
-pub static CONFIG_FILE_NAME: &str =  ".sai_git_hook_config";
+pub static CONFIG_DIR_NAME: &str =  ".sai_git_hook_config";
 
 #[allow(dead_code)]
 pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
@@ -28,8 +28,24 @@ pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
 
 #[allow(dead_code)]
 impl Config {
-    pub fn read_from_config() -> Result<Self, Box<dyn Error>> {
-        let file = File::open(&Config::config_file_path())?;
+
+    pub fn read_input<S: AsRef<str>>(header: S) -> Result<Config, Box<dyn Error>> {
+        let team_name = get_input(format!("{}: What is your Team Name?", header.as_ref()))?;
+        let username = get_input(format!("{}: What is your Username", header.as_ref()))?;
+
+        Ok(Config {
+            team_name,
+            username
+        })
+    }
+
+    pub fn read_config() -> Result<Self, Box<dyn Error>> {
+        let mut config_dir_path = Config::config_dir_path();
+        if !config_dir_path.exists() {
+            Err("Git Hook Config Folder doesn't exist")?;
+        }
+        config_dir_path.push("config");
+        let file = File::open(config_dir_path.as_path())?;
         let mut reader = BufReader::new(file);
 
         Ok(Config {
@@ -39,7 +55,12 @@ impl Config {
     }
 
     pub fn save_to_file(&self) -> Result<(), Box<dyn Error>> {
-        let file = File::create(&Config::config_file_path())?;
+        let mut config_dir_path = Config::config_dir_path();
+        if !config_dir_path.exists() {
+            std::fs::create_dir(&config_dir_path)?;
+        }
+        config_dir_path.push("config");
+        let file = File::create(config_dir_path.as_path())?;
 
         let mut writer = BufWriter::new(file);
 
@@ -48,9 +69,10 @@ impl Config {
 
         Ok(())
     }
-    fn config_file_path() -> PathBuf {
+
+    pub fn config_dir_path() -> PathBuf {
         let mut config_file_path = dirs::home_dir().unwrap();
-        config_file_path.push(CONFIG_FILE_NAME);
+        config_file_path.push(CONFIG_DIR_NAME);
         config_file_path
     }
 
