@@ -41,7 +41,7 @@ Example payload
 
 ### Steps
 1. Grab the binaries for your platform under [Releases](https://github.com/sourceallies/SA-Git-Hook/releases/) zip file
-1. Go into the platform directory (Windows or macOS)
+1. Go into the platform directory (Windows or macOS) by `cd` or `dir` into those directories.
 1. Run the __install__ binary (__.exe__ for Windows)
 
 ## Manual Install
