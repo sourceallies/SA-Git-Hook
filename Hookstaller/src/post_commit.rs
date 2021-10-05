@@ -161,10 +161,12 @@ fn println_log<S: AsRef<str>>(output: S) {
 
 fn uninstall_hook() -> Result<(), Box<dyn Error>> {
     let mut path = std::env::current_dir()?;
-    println_log(format!("Uninstalling Hook at {}", path.to_str().unwrap()));
     path.push(".git");
     path.push("hooks");
     path.push(post_executable_path());
+
+    println_log(format!("Uninstalling Hook at {}", path.to_str().unwrap()));
+    
     std::fs::remove_file(path)?;
     Ok(())
 }
