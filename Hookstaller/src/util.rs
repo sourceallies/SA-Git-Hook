@@ -4,6 +4,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::str::FromStr;
+use std::env;
 
 static DEFAULT_TIMEOUT_DURATION: Duration = Duration::from_secs(3);
 static DEFAULT_ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
@@ -149,4 +150,9 @@ impl Config {
         let value = value.trim().split('=').skip(1).next().unwrap().to_string();
         Ok(value)
     }
+}
+
+pub fn post_executable_path() -> PathBuf {
+    let os = env::consts::OS;
+    PathBuf::from(match os { "windows" => "post-commit.exe", _ => "post-commit" })
 }

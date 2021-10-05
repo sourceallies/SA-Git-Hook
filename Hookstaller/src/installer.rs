@@ -3,17 +3,15 @@ use std::error::Error;
 use std::process::Command;
 use std::path::{PathBuf};
 use std::fs;
-use std::env;
+
 use std::str::FromStr;
-use crate::util::{check_y_n, get_input, Config};
+use crate::util::{check_y_n, get_input, Config, post_executable_path};
 
 static APP_HEADER: &str = "[Git-Hook-Installer]";
 
 fn install_git_hook() -> Result<(), Box<dyn Error>> {
     let should_apply_globally = check_y_n(get_input(log_format("Should this hook be installed globally? (Y|N)"))?);
-    let os = env::consts::OS;
-    let post_commit_executable = PathBuf::from(match os { "windows" => "post-commit.exe", _ => "post-commit" });
-
+    let post_commit_executable = post_executable_path();
     if !post_commit_executable.exists() {
         //TODO: Maybe check for the post-commit hook inside the config directory?
         Err("Can't Find Git Hook in current directory")?;

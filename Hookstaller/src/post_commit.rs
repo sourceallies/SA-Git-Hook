@@ -10,9 +10,9 @@ use std::{thread, env};
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
-use crate::util::Config;
+use crate::util::{Config, post_executable_path};
 use std::collections::HashSet;
-use std::path::PathBuf;
+
 
 
 #[derive(Clone)]
@@ -160,10 +160,12 @@ fn println_log<S: AsRef<str>>(output: S) {
 }
 
 fn uninstall_hook() -> Result<(), Box<dyn Error>> {
-    let path = PathBuf::from_str("./")?;
-
-    println_log(std::fs::canonicalize(path).unwrap().to_str().unwrap());
-
+    let mut path = std::env::current_dir()?;
+    println_log(format!("Uninstalling Hook at {}", path.to_str().unwrap()));
+    path.push(".git");
+    path.push("hooks");
+    path.push(post_executable_path());
+    std::fs::remove_file(path)?;
     Ok(())
 }
 
@@ -172,7 +174,6 @@ fn main() {
         Ok(cfg) => cfg,
         Err(e) => {
             println_log(format!("Invalid Config: {}", e));
-            println_log("Uninstalling Hook");
             match uninstall_hook() {
                 Err(e) => {
                     println_log(e.to_string());
