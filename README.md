@@ -7,6 +7,10 @@ lambda that is used to populate a commit stats leaderboard.
 
 This hook will send traffic to a url upon each local commit. Security analysis may find that this git metadata could be used to identify repos, partners, file types, and languages. When consulting, __do not use this hook on client computers nor client repos__ without having a conversation and receiving explicit permission.
 
+## Links
+
+[Dashboard](http://git-metrics.sandbox-dev.sourceallies.com)
+
 ## Collected Data
 
 ### Config
