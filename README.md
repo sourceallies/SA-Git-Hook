@@ -88,3 +88,16 @@ Run `git config --global --unset core.hooksPath`
 
 Remove the `post-commit` executable in the `.git/hooks/` directory in the repository you would like to remove the hook
 from.
+
+## Authors
+
+### Active
+
+- [@SourceBolt](https://github.com/SourceBolt)
+- [@grey-lovelace](https://github.com/grey-lovelace)
+
+### Reserve
+
+- [@AndreasChristianson](https://github.com/AndreasChristianson)
+- [@JDawson98](https://github.com/JDawson98)
+- [@GeneTinderholm](https://github.com/GeneTinderholm)
