@@ -10,12 +10,9 @@ use std::{thread, env};
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
-use crate::util::Config;
+use crate::util::{Config, post_executable_path};
 use std::collections::HashSet;
 
-//TODO: Make timeout in config file and also endpoint
-static TIMEOUT_DURATION: Duration = Duration::from_secs(3);
-static ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
 
 
 #[derive(Clone)]
@@ -66,11 +63,12 @@ impl DiffStats {
         let response_state = Arc::new(Mutex::new(Running));
 
         let inside_response_state = Arc::clone(&response_state);
+        let timeout = config.timeout.clone();
         thread::spawn(move || {
             let client = reqwest::blocking::Client::new();
 
             println_log("Sent Diff Stats");
-            let response = client.post(ENDPOINT).body(self.to_json(&config)).send();
+            let response = client.post(&config.endpoint).body(self.to_json(&config)).send();
             match response {
                 Ok(r) => {
                     let status = r.status();
@@ -88,7 +86,7 @@ impl DiffStats {
         });
         let start_time = Instant::now();
         loop {
-            if start_time.elapsed() > TIMEOUT_DURATION {
+            if start_time.elapsed() > timeout {
                 break;
             }
             let state = response_state.lock().unwrap();
@@ -161,11 +159,31 @@ fn println_log<S: AsRef<str>>(output: S) {
     println!("{}", log_format(output));
 }
 
+fn uninstall_hook() -> Result<(), Box<dyn Error>> {
+    let mut path = std::env::current_dir()?;
+    path.push(".git");
+    path.push("hooks");
+    path.push(post_executable_path());
+
+    println_log(format!("Uninstalling Hook at {}", path.to_str().unwrap()));
+    
+    std::fs::remove_file(path)?;
+    Ok(())
+}
+
 fn main() {
     let config = match Config::read_config() {
         Ok(cfg) => cfg,
         Err(e) => {
             println_log(format!("Invalid Config: {}", e));
+            match uninstall_hook() {
+                Err(e) => {
+                    println_log(e.to_string());
+                }
+                Ok(_) => {
+                    println_log("Successfully uninstalled Hook. To reinstall run install.sh again");
+                }
+            }
             return;
         }
     };
