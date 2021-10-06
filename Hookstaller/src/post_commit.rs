@@ -181,7 +181,7 @@ fn main() {
                     println_log(e.to_string());
                 }
                 Ok(_) => {
-                    println_log("Uninstalled Hook to reinstall run the install again");
+                    println_log("Successfully uninstalled Hook. To reinstall run install.sh again");
                 }
             }
             return;
