@@ -1,6 +1,6 @@
-# SA Git Hook
+# Git Hook Project (rename incoming)
 
-SA Git Hook is a [post commit hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) that sends commit stats to
+This Git Hook project is a [post commit hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) that sends commit stats to
 lambda that is used to populate a commit stats leaderboard.
 
 ## Disclaimer: __Do not use this hook without explicit client approval__
