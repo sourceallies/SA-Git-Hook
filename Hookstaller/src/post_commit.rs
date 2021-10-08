@@ -10,7 +10,7 @@ use std::{thread, env};
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
-use crate::util::{Config, post_executable_path};
+use crate::util::util::{Config, hook_executable_file_name};
 use std::collections::HashSet;
 
 
@@ -44,7 +44,7 @@ impl DiffStats {
             let mut splits = line.trim().split_whitespace();
             insertions += u32::from_str(splits.next().unwrap())?;
             deletions += u32::from_str(splits.next().unwrap())?;
-            let file_extension = DiffStats::get_file_extension(&mut splits);
+            let file_extension = DiffStats::file_extension(&mut splits);
             if file_extension.is_some() {
                 extensions.insert(file_extension.unwrap());
             }
@@ -101,7 +101,7 @@ impl DiffStats {
         }
     }
 
-    fn get_file_extension(splits: &mut SplitWhitespace) -> Option<String> {
+    fn file_extension(splits: &mut SplitWhitespace) -> Option<String> {
         let os = env::consts::OS;
         let file_name = splits.next().unwrap().rsplit(match os { "windows" => '\\', _ => '/' }).next().unwrap();
         if file_name.contains('.') {
@@ -163,7 +163,7 @@ fn uninstall_hook() -> Result<(), Box<dyn Error>> {
     let mut path = std::env::current_dir()?;
     path.push(".git");
     path.push("hooks");
-    path.push(post_executable_path());
+    path.push(hook_executable_file_name());
 
     println_log(format!("Uninstalling Hook at {}", path.to_str().unwrap()));
     
@@ -172,7 +172,7 @@ fn uninstall_hook() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
-    let config = match Config::read_config() {
+    let config = match Config::read_existing_config() {
         Ok(cfg) => cfg,
         Err(e) => {
             println_log(format!("Invalid Config: {}", e));
@@ -181,7 +181,7 @@ fn main() {
                     println_log(e.to_string());
                 }
                 Ok(_) => {
-                    println_log("Successfully uninstalled Hook. To reinstall run install.sh again");
+                    println_log("Successfully uninstalled Hook. To reinstall run install(.exe) again");
                 }
             }
             return;
