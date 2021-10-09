@@ -10,7 +10,8 @@ use std::{thread, env};
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use crate::ResponseState::{Running, Success, Failed};
-use crate::util::util::{Config, hook_executable_file_name};
+use crate::util::config::Config;
+use crate::util::fs::remove_hook_from_git_directory;
 use std::collections::HashSet;
 
 
@@ -59,6 +60,7 @@ impl DiffStats {
         })
     }
 
+    //TODO: Make async function that races against a timeout i.e. a.race(b)
     fn post_to_remote(self, config: Config) {
         let response_state = Arc::new(Mutex::new(Running));
 
@@ -160,14 +162,10 @@ fn println_log<S: AsRef<str>>(output: S) {
 }
 
 fn uninstall_hook() -> Result<(), Box<dyn Error>> {
-    let mut path = std::env::current_dir()?;
-    path.push(".git");
-    path.push("hooks");
-    path.push(hook_executable_file_name());
-
+    let path = std::env::current_dir()?;
     println_log(format!("Uninstalling Hook at {}", path.to_str().unwrap()));
-    
-    std::fs::remove_file(path)?;
+
+    remove_hook_from_git_directory(&path)?;
     Ok(())
 }
 

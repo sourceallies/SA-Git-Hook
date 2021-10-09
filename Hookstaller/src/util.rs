@@ -1,15 +1,24 @@
+#![allow(dead_code)]
 use std::time::Duration;
 
-static DEFAULT_TIMEOUT_DURATION: Duration = Duration::from_secs(3);
+
+static DEFAULT_TIMEOUT_DURATION: Duration = Duration::from_secs(1);
 static DEFAULT_ENDPOINT: &str = "https://hnxgs8zjjd.execute-api.us-east-1.amazonaws.com/test/stuffs";
 pub static APP_DIR_NAME: &str =  ".commit_collective_git_hook";
+pub static APP_BIN_DIR_NAME: &str = "bin";
+pub static APP_HOOK_DIR_NAME: &str = "hooks";
+pub static INSTALLER_BIN_NAME: &str = "installer";
+pub static APP_BIN_NAME: &str = "commit-collective";
+pub static HOOK_BIN_NAME: &str = "post-commit";
+
 
 /// Folder structure is the following
 /// .commit_collective_git_hook/
 ///     config
-///     bin/
-///         install(.exe)
+///     hooks/
 ///         post-commit(.exe)
+///     bin/
+///         installer -> commit-collective(.exe)
 
 // macro_rules! param_read_write {
 //     (struct $name:ident {$($fname:ident : $ftype:ty),* }) => {
@@ -25,56 +34,21 @@ pub static APP_DIR_NAME: &str =  ".commit_collective_git_hook";
 //     }
 // }
 
-//TODO: Rename util mod to make more sense in util file
-
-#[allow(dead_code)]
-pub mod util {
-    use std::error::Error;
-    use std::io::{Write, BufWriter, BufReader, BufRead};
+pub mod config {
+    use std::io::{BufRead, BufReader, BufWriter, Write};
     use std::fs::File;
-    use std::path::{PathBuf};
+    use std::error::Error;
+    use crate::util::fs::app_dir_path;
     use std::time::Duration;
     use std::str::FromStr;
-    use std::env;
-    use crate::util::{DEFAULT_TIMEOUT_DURATION, DEFAULT_ENDPOINT, APP_DIR_NAME};
+    use crate::util::{DEFAULT_TIMEOUT_DURATION, DEFAULT_ENDPOINT};
+    use crate::util::input::{get_required_input, get_optional_input};
 
     pub struct Config {
         pub team_name: String,
         pub username: String,
         pub timeout: Duration,
         pub endpoint: String
-    }
-
-
-    //TODO: Maybe make T: FromStr typed
-    #[allow(dead_code)]
-    pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
-        print!("{} ", prompt.as_ref());
-        std::io::stdout().flush()?;
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input)?;
-        let input = input.trim().to_string();
-        Ok(input)
-    }
-
-    pub fn get_required_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
-        let mut input = get_input(prompt.as_ref())?;
-        while input.is_empty() {
-            input = get_input(prompt.as_ref())?;
-        }
-        Ok(input)
-    }
-
-    pub fn get_optional_input<S: AsRef<str>>(prompt: S) -> Result<Option<String>, Box<dyn Error>> {
-        let input = get_input(prompt.as_ref())?;
-        if input.is_empty() {
-            return Ok(None);
-        }
-        Ok(Some(input))
-    }
-
-    pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
-        s.as_ref().to_lowercase() == "y"
     }
 
     impl Default for Config {
@@ -108,6 +82,9 @@ pub mod util {
                 Err("Git Hook Folder doesn't exist")?;
             }
             config_dir_path.push("config");
+            if !config_dir_path.exists() {
+                Err("Git Hook Config doesn't exist")?;
+            }
             let file = File::open(config_dir_path.as_path())?;
             let mut reader = BufReader::new(file);
             let team_name = Config::value_from_config_reader(&mut reader)?;
@@ -155,15 +132,53 @@ pub mod util {
         }
     }
 
-    pub fn hook_executable_file_name() -> PathBuf {
-        let os = env::consts::OS;
-        let path = PathBuf::from(match os { "windows" => "post-commit.exe", _ => "post-commit" });
-        return path;
+}
+
+pub mod input {
+    use std::error::Error;
+    use std::io::Write;
+
+    //TODO: Maybe make T: FromStr typed
+    pub fn get_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
+        print!("{} ", prompt.as_ref());
+        std::io::stdout().flush()?;
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
+        let input = input.trim().to_string();
+        Ok(input)
     }
 
-    pub fn installer_executable_file_name() -> PathBuf {
+    pub fn get_required_input<S: AsRef<str>>(prompt: S) -> Result<String, Box<dyn Error>> {
+        let mut input = get_input(prompt.as_ref())?;
+        while input.is_empty() {
+            input = get_input(prompt.as_ref())?;
+        }
+        Ok(input)
+    }
+
+    pub fn get_optional_input<S: AsRef<str>>(prompt: S) -> Result<Option<String>, Box<dyn Error>> {
+        let input = get_input(prompt.as_ref())?;
+        if input.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(input))
+    }
+
+    pub fn check_y_n<S: AsRef<str>>(s: S) -> bool {
+        s.as_ref().to_lowercase() == "y"
+    }
+}
+
+pub mod fs {
+    use std::path::{Path, PathBuf};
+    use std::error::Error;
+    use crate::util::{HOOK_BIN_NAME, APP_DIR_NAME};
+    use std::str::FromStr;
+    use std::env;
+
+    pub fn os_specific_binary_name(s: &str) -> PathBuf {
         let os = env::consts::OS;
-        let path = PathBuf::from(match os { "windows" => "installer.exe", _ => "installer" });
+        let path = PathBuf::from(match os { "windows" => format!("{}.exe", s), _ => s.to_string() });
         return path;
     }
 
@@ -179,6 +194,12 @@ pub mod util {
         app_bin_path
     }
 
+    pub fn app_hooks_dir_path() -> PathBuf {
+        let mut app_bin_path = app_dir_path();
+        app_bin_path.push("hooks");
+        app_bin_path
+    }
+
     pub fn create_if_not_exists(path: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
         if path.exists() {
             return Ok(path);
@@ -188,8 +209,56 @@ pub mod util {
     }
 
     pub fn hook_executable_path() -> PathBuf {
-        let mut exec_path = app_bin_dir_path();
-        exec_path.push(hook_executable_file_name());
+        let mut exec_path = app_hooks_dir_path();
+        exec_path.push(os_specific_binary_name(HOOK_BIN_NAME));
         exec_path
+    }
+
+    pub fn is_git_directory(path: &str) -> Result<PathBuf, Box<dyn Error>> {
+        let path = PathBuf::from_str(path)?.canonicalize()?;
+
+        is_path_git_directory(&path)?;
+
+        Ok(path)
+    }
+
+    pub fn is_path_git_directory(path: &Path) -> Result<(), Box<dyn Error>> {
+        if !path.is_dir() {
+            Err(format!("Can't install to {} is not a directory", path.to_str().unwrap()))?;
+        }
+        if !path.exists() {
+            Err(format!("Install directory {} doesn't exist", path.to_str().unwrap()))?;
+        }
+
+        let mut path = PathBuf::from(path);
+        path.push(".git");
+        if !path.exists() {
+            path.pop();
+            Err(format!("Install directory {} isn't a git repo", path.to_str().unwrap()))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn copy_hook_to_git_directory(git_directory: &Path) -> Result<(), Box<dyn Error>> {
+        is_path_git_directory(git_directory)?;
+        let mut path = PathBuf::from(git_directory);
+        path.push(".git");
+        path.push("hooks");
+        let hook = hook_executable_path();
+
+        std::fs::copy(hook, path)?;
+
+        Ok(())
+    }
+
+    pub fn remove_hook_from_git_directory(git_directory: &Path) -> Result<(), Box<dyn Error>> {
+        is_path_git_directory(git_directory)?;
+        let mut path = PathBuf::from(git_directory);
+        path.push(".git");
+        path.push("hooks");
+        path.push(os_specific_binary_name(HOOK_BIN_NAME));
+        std::fs::remove_file(path)?;
+        Ok(())
     }
 }

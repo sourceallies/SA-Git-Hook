@@ -5,9 +5,12 @@ use std::path::{PathBuf};
 
 
 use std::str::FromStr;
-use crate::util::util::{check_y_n, get_input, Config, hook_executable_file_name, app_dir_path, app_bin_dir_path, create_if_not_exists, installer_executable_file_name};
-use crate::util::APP_DIR_NAME;
+use crate::util::{APP_DIR_NAME, APP_BIN_DIR_NAME};
 use clap::{App, Arg};
+use crate::util::fs::{app_dir_path, app_bin_dir_path, app_hooks_dir_path, is_git_directory, os_specific_binary_name, create_if_not_exists};
+use crate::util::{APP_HOOK_DIR_NAME, HOOK_BIN_NAME, INSTALLER_BIN_NAME, APP_BIN_NAME};
+use crate::util::config::Config;
+use crate::util::input::{check_y_n, get_input};
 
 static APP_HEADER: &str = "[Commit-Collective-Installer]";
 
@@ -31,62 +34,71 @@ fn println_log<S: AsRef<str>>(output: S) {
     println!("{}", log_format(output));
 }
 
-fn check_directory(path: &str) -> Result<PathBuf, Box<dyn Error>> {
-    let mut path = PathBuf::from_str(path)?.canonicalize()?;
 
-    if !path.is_dir() {
-        Err(format!("Can't install to {} is not a directory", path.to_str().unwrap()))?;
-    }
-    if !path.exists() {
-        Err(format!("Install directory {} doesn't exist", path.to_str().unwrap()))?;
+pub fn create_app_dir() -> Result<PathBuf, Box<dyn Error>> {
+    let mut app_dir = app_dir_path();
+
+    if !app_dir.exists() {
+        std::fs::create_dir(&app_dir)?;
     }
 
-    path.push(".git");
-    if !path.exists() {
-        path.pop();
-        Err(format!("Install directory {} isn't a git repo", path.to_str().unwrap()))?;
-    }
-    path.pop();
+    app_dir.push(APP_BIN_DIR_NAME);
 
-    Ok(path)
+    if !app_dir.exists() {
+        std::fs::create_dir(&app_dir)?;
+    }
+    app_dir.pop();
+
+    app_dir.push(APP_HOOK_DIR_NAME);
+
+    if !app_dir.exists() {
+        std::fs::create_dir(&app_dir)?;
+    }
+    app_dir.pop();
+
+    Ok(app_dir)
 }
 
 /// Moves the installer and the post-commit hook into the bin folder and then returns the post-commit Path
-fn move_executables() -> Result<PathBuf, Box<dyn Error>> {
+fn move_executables() -> Result<(), Box<dyn Error>> {
     let mut executable_directory = std::env::current_exe()?;
     executable_directory.pop();
 
     let mut installer_executable = executable_directory.clone();
-    let installer_exec_name = installer_executable_file_name();
+    let installer_exec_name = os_specific_binary_name(INSTALLER_BIN_NAME);
     installer_executable.push(&installer_exec_name);
-
-    let mut hook_executable = executable_directory.clone();
-    let hook_exec_name = hook_executable_file_name();
-    hook_executable.push(&hook_exec_name);
 
     if !installer_executable.exists() {
         Err("Install Binary can't be found")?;
     }
+
+    let mut hook_executable = executable_directory.clone();
+    let hook_exec_name = os_specific_binary_name(HOOK_BIN_NAME);
+    hook_executable.push(&hook_exec_name);
+
     if !hook_executable.exists() {
         Err("Hook Binary can't be found")?;
     }
 
-    let bin_folder = create_if_not_exists(app_bin_dir_path())?;
-
-    let mut installer_to_path = bin_folder.clone();
+    let mut installer_to_path = create_if_not_exists(app_bin_dir_path())?;
     installer_to_path.push(installer_exec_name);
 
-    let mut hook_to_path = bin_folder.clone();
-    hook_to_path.push(hook_exec_name);
-
-    if installer_executable == installer_to_path {
-        return Ok(hook_to_path);
+    if installer_to_path != installer_executable {
+        std::fs::copy(installer_executable, &installer_to_path)?;
+        let mut app_bin = installer_to_path.clone();
+        app_bin.pop();
+        app_bin.push(os_specific_binary_name(APP_BIN_NAME));
+        std::fs::rename(&installer_to_path, app_bin)?;
     }
 
-    std::fs::copy(installer_executable, installer_to_path)?;
-    std::fs::copy(hook_executable, &hook_to_path)?;
+    let mut hook_to_path = create_if_not_exists(app_hooks_dir_path())?;
+    hook_to_path.push(hook_exec_name);
 
-    Ok(hook_to_path)
+    if hook_to_path != hook_executable {
+        std::fs::copy(hook_executable, &hook_to_path)?;
+    }
+
+    Ok(())
 }
 
 fn install_global_git_hook() -> Result<(), Box<dyn Error>> {
@@ -121,18 +133,23 @@ fn manual_hook_install() -> Result<(), Box<dyn Error>> {
 }
 
 fn install_to_path(path: &str) -> Result<(), Box<dyn Error>> {
-    let mut path = check_directory(path)?;
-
-    create_if_not_exists(app_dir_path())?;
+    let mut path = is_git_directory(path)?;
 
     let cfg = Config::read_config(APP_HEADER)?;
     cfg.save_to_file()?;
 
-    let hook_path = move_executables()?;
-
     path.push(".git");
     path.push("hooks");
-    path.push(hook_executable_file_name());
+
+    let hook_name = os_specific_binary_name(HOOK_BIN_NAME);
+    path.push(&hook_name);
+
+    let mut hook_path = app_hooks_dir_path();
+    hook_path.push(&hook_name);
+
+    if !hook_path.exists() {
+        move_executables()?;
+    }
 
     std::fs::copy(&hook_path, &path)?;
 
@@ -157,15 +174,12 @@ fn full_install() -> Result<(), Box<dyn Error>> {
 
     cfg.save_to_file()?;
 
-    // Move binaries to bin folder
     move_executables()?;
 
     manual_hook_install()?;
 
     Ok(())
 }
-
-
 
 fn uninstall_app() {
     match uninstall_app_dir() {
