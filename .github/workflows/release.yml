@@ -34,7 +34,10 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
+          if-no-files-found: error
           path: |
-            target/release/installer*
-            target/release/post-commit*
+            Hookstaller/target/release/installer
+            Hookstaller/target/release/installer.exe
+            Hookstaller/target/release/post-commit
+            Hookstaller/target/release/post-commit.exe
         
