@@ -29,11 +29,14 @@ jobs:
             name: MacOS
     steps:
       - uses: actions/checkout@v2
-      - name: Build
+      - name: Release
         run: cargo build --verbose --release
+      - name: Check Dir
+        run: ls target/
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
+          if-no-files-found: error
           path: |
             target/release/installer*
             target/release/post-commit*
