@@ -1,3 +1,4 @@
+[![Build / Test](https://github.com/sourceallies/SA-Git-Hook/actions/workflows/build.yml/badge.svg)](https://github.com/sourceallies/SA-Git-Hook/actions/workflows/build.yml)
 # SA Git Hook
 
 SA Git Hook is a [post commit hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) that sends commit stats to
