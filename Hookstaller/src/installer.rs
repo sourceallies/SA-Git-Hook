@@ -59,7 +59,7 @@ pub fn create_app_dir() -> Result<PathBuf, Box<dyn Error>> {
     Ok(app_dir)
 }
 
-/// Moves the installer and the post-commit hook into the bin folder and then returns the post-commit Path
+/// Moves the installer and the post-commit hook into the bin folder and renames the installer
 fn move_executables() -> Result<(), Box<dyn Error>> {
     let mut executable_directory = std::env::current_exe()?;
     executable_directory.pop();
@@ -126,13 +126,13 @@ fn manual_hook_install() -> Result<(), Box<dyn Error>> {
                 break;
             }
             let path = PathBuf::from_str(repo_dir)?;
-            install_to_path(path.to_str().unwrap())?;
+            install_to_directory(path.to_str().unwrap())?;
         }
     }
     Ok(())
 }
 
-fn install_to_path(path: &str) -> Result<(), Box<dyn Error>> {
+fn install_to_directory(path: &str) -> Result<(), Box<dyn Error>> {
     let mut path = is_git_directory(path)?;
 
     let cfg = Config::read_config(APP_HEADER)?;
@@ -229,10 +229,10 @@ fn main() {
         .version(env!("CARGO_PKG_VERSION"))
         .author("Source Allies")
         .about("Installs the Commit Collective git hook")
-        .arg(Arg::with_name("PATH")
+        .arg(Arg::with_name("DIR")
             .required(false)
             .index(1)
-            .help("Path to install the git hook. If the hook isn't set up yet then it installs it before placing in directory"))
+            .help("Directroy to install the git hook. If the hook isn't set up yet then it installs it before placing in directory"))
         .arg(Arg::with_name("u")
             .short("u")
             .long("uninstall")
@@ -244,8 +244,8 @@ fn main() {
         return;
     }
 
-    if matches.is_present("PATH") {
-        soft_unwrap!(install_to_path(matches.value_of("PATH").unwrap()));
+    if matches.is_present("DIR") {
+        soft_unwrap!(install_to_directory(matches.value_of("DIR").unwrap()));
     } else {
         soft_unwrap!(full_install());
     }
