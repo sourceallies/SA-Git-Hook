@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version"
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Create Release ${{ github.event.inputs.release_version }} On ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./Hookstaller/
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            name: Ubuntu
+          - os: windows-latest
+            name: Windows
+          - os: macOS-latest
+            name: MacOS
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --verbose --release
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
+          path: |
+            target/release/installer*
+            target/release/post-commit*
+        
