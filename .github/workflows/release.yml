@@ -19,14 +19,14 @@ jobs:
         working-directory: ./Hookstaller/
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest]
         include:
           - os: ubuntu-latest
             name: Ubuntu
-          - os: windows-latest
-            name: Windows
-          - os: macOS-latest
-            name: MacOS
+#           - os: windows-latest
+#             name: Windows
+#           - os: macOS-latest
+#             name: MacOS
     steps:
       - uses: actions/checkout@v2
       - name: Release
@@ -38,6 +38,6 @@ jobs:
           name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
           if-no-files-found: error
           path: |
-            target/release/installer?(|.exe)
-            target/release/post-commit?(|.exe)
+            Hookstaller/target/release/installer
+            Hookstaller/target/release/post-commit
         
