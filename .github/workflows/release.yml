@@ -31,11 +31,19 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build
         run: cargo build --verbose --release
+      - name: Package
+        run: |
+          cd target/release/
+          tar -cvf release.tar installer installer.exe post-commit post-commit.exe
+          cd ../../
+          mv target/release/release.tar ./
       - uses: actions/upload-artifact@v2
+        name: Publish
         with:
           name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
           if-no-files-found: error
           path: |
+            Hookstaller/release.tar
             Hookstaller/target/release/installer
             Hookstaller/target/release/installer.exe
             Hookstaller/target/release/post-commit
