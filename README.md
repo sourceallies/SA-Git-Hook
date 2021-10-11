@@ -7,6 +7,10 @@ lambda that is used to populate a commit stats leaderboard.
 
 This hook will send traffic to a url upon each local commit. Security analysis may find that this git metadata could be used to identify repos, partners, file types, and languages. When consulting, __do not use this hook on client computers nor client repos__ without having a conversation and receiving explicit permission.
 
+## Links
+
+[Dashboard](http://git-metrics.sandbox-dev.sourceallies.com)
+
 ## Collected Data
 
 ### Config
@@ -84,3 +88,16 @@ Run `git config --global --unset core.hooksPath`
 
 Remove the `post-commit` executable in the `.git/hooks/` directory in the repository you would like to remove the hook
 from.
+
+## Authors
+
+### Active
+
+- [@SourceBolt](https://github.com/SourceBolt)
+- [@grey-lovelace](https://github.com/grey-lovelace)
+
+### Reserve
+
+- [@AndreasChristianson](https://github.com/AndreasChristianson)
+- [@JDawson98](https://github.com/JDawson98)
+- [@GeneTinderholm](https://github.com/GeneTinderholm)
