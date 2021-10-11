@@ -33,11 +33,7 @@ jobs:
         run: cargo build --verbose --release
       - uses: papeloto/action-zip@v1
         with:
-          files: |
-            Hookstaller/target/release/installer
-            Hookstaller/target/release/installer.exe
-            Hookstaller/target/release/post-commit
-            Hookstaller/target/release/post-commit.exe
+          files: Hookstaller/target/release/installer Hookstaller/target/release/installer.exe Hookstaller/target/release/post-commit Hookstaller/target/release/post-commit.exe
           recursive: false
           dest: Artifact.zip
       - uses: actions/upload-artifact@v2
