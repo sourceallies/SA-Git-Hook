@@ -42,10 +42,5 @@ jobs:
         with:
           name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
           if-no-files-found: error
-          path: |
-            Hookstaller/release.tar
-            Hookstaller/target/release/installer
-            Hookstaller/target/release/installer.exe
-            Hookstaller/target/release/post-commit
-            Hookstaller/target/release/post-commit.exe
+          path: Hookstaller/release.tar
         
