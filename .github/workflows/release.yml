@@ -34,7 +34,7 @@ jobs:
       - name: Package
         run: |
           cd target/release/
-          tar -cvf release.tar installer installer.exe post-commit post-commit.exe
+          tar -cvf release.tar $(ls installer installer.exe post-commit post-commit.exe)
           cd ../../
           mv target/release/release.tar ./
       - uses: actions/upload-artifact@v2
