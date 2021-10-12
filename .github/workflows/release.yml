@@ -19,7 +19,7 @@ jobs:
         working-directory: ./Hookstaller/
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [macOS-latest, ubuntu-latest, windows-latest]
         include:
           - os: ubuntu-latest
             name: Ubuntu
@@ -34,7 +34,7 @@ jobs:
       - name: Package
         run: |
           cd target/release/
-          tar -cvf release.tar installer installer.exe post-commit post-commit.exe 2>/dev/null || true
+          tar -cvf release.tar installer installer.exe post-commit post-commit.exe || true
           cd ../../
           mv target/release/release.tar ./
       - uses: actions/upload-artifact@v2
