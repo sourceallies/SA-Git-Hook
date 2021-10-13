@@ -1,0 +1,24 @@
+apiVersion: 1
+
+datasources:
+  - orgId: 1
+    name: PostgreSQL
+    type: postgres
+    typeName: PostgreSQL
+    typeLogoUrl: public/app/plugins/datasource/postgres/img/postgresql_logo.svg
+    access: proxy
+    url: ${DATASOURCE_URL}
+    user: ${DATASOURCE_USER}
+    database: ${DATASOURCE_DB}
+    basicAuth: false
+    isDefault: true
+    jsonData:
+      postgresVersion: 1000
+      sslmode: verify-full
+      tlsAuth: true
+      tlsAuthWithCACert: true
+      tlsConfigurationMethod: file-path
+      tlsSkipVerify: false
+    secureJsonData:
+      password: ${DATASOURCE_PASS}
+    readOnly: false
