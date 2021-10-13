@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create:
+    name: Building On ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./Hookstaller/
+    strategy:
+      matrix:
+        os: [macOS-latest, ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            name: Ubuntu
+          - os: windows-latest
+            name: Windows
+          - os: macOS-latest
+            name: MacOS
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout
+      - name: Get Version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Build
+        run: cargo build --verbose --release
+      - name: Package
+        run: |
+          cd target/release/
+          tar -cvf release.tar installer installer.exe post-commit post-commit.exe || true
+          cd ../../
+          mv target/release/release.tar ./
+      - uses: actions/upload-artifact@v2
+        name: Make Artifact
+        with:
+          name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
+          if-no-files-found: error
+          path: Hookstaller/release.tar
+  release:
+    name: Releasing
+    runs-on: ubuntu-latest
+    needs: create
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout
+      - uses: actions/download-artifact@v2
+        name: Download Artifacts
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with: 
+          files: "*.tar"
+# ${{ matrix.name }}-${{ steps.get_version.outputs.VERSION }}.tar
+      
