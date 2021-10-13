@@ -34,17 +34,19 @@ jobs:
       - name: Build
         run: cargo build --verbose --release
       - name: Package
+        env:
+          RELEASE_NAME: ${{ matrix.name }}-Release-${{ steps.get_version.outputs.VERSION }}
         run: |
           cd target/release/
           tar -cvf release.tar installer installer.exe post-commit post-commit.exe || true
           cd ../../
-          mv target/release/release.tar ./
+          mv target/release/release.tar ./$(echo $RELEASE_NAME).tar
       - uses: actions/upload-artifact@v2
         name: Make Artifact
         with:
-          name: ${{ matrix.name }} Release
+          name: ${{ matrix.name }} Release ${{ steps.get_version.outputs.VERSION }}
           if-no-files-found: error
-          path: Hookstaller/${{ matrix.name }}-Installer.tar
+          path: Hookstaller/${{ matrix.name }}-Release-${{ steps.get_version.outputs.VERSION }}.tar
   release:
     name: Releasing
     runs-on: ubuntu-latest
