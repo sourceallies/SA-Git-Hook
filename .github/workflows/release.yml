@@ -43,6 +43,7 @@ jobs:
           cd ../../
           mv target/release/release.tar ./$(echo $RELEASE_NAME).tar
           ls -l ./
+        shell: bash
       - uses: actions/upload-artifact@v2
         name: Make Artifact
         with:
