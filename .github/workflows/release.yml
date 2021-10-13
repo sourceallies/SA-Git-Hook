@@ -54,9 +54,13 @@ jobs:
         name: Checkout
       - uses: actions/download-artifact@v2
         name: Download Artifacts
+        with:
+          path: artifacts/
       - name: Release
         uses: softprops/action-gh-release@v1
-        with: 
-          files: "*.tar"
+        with:
+          prerelease: true
+          files: "artifacts/*/*.tar"
+          fail_on_unmatched_files: true
 # ${{ matrix.name }}-${{ steps.get_version.outputs.VERSION }}.tar
       
