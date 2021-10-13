@@ -42,6 +42,7 @@ jobs:
           tar -cvf release.tar installer installer.exe post-commit post-commit.exe || true
           cd ../../
           mv target/release/release.tar ./$(echo $RELEASE_NAME).tar
+          ls -l ./
       - uses: actions/upload-artifact@v2
         name: Make Artifact
         with:
