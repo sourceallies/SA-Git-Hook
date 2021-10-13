@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  AppNameParameter:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9_]+"
+    Default: CommitCollective
+  VpcId:
+    Description: The VPC to which this cluster should be deployed
+    Type: AWS::EC2::VPC::Id
+  Subnets:
+    Description: Choose at least two subnets in this VPC
+    Type: List<AWS::EC2::Subnet::Id>
+  ImageParameter:
+    Type: String
+    Default: grafana/grafana:8.1.7
+  SecretsParameter:
+    Type: String
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${AppNameParameter}-cluster"
+
+  ServiceDefinition:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancerListener
+    Properties:
+      ServiceName: !Sub "${AppNameParameter}-service"
+      LaunchType: FARGATE
+      TaskDefinition: !Ref TaskDefinition
+      Cluster: !Ref ECSCluster
+      LoadBalancers:
+        - ContainerName: grafana-container
+          ContainerPort: "3000"
+          TargetGroupArn: !Ref TargetGroup
+      DesiredCount: 1
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref Subnets
+          SecurityGroups:
+            - !Ref EcsSecurityGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${AppNameParameter}-grafana"
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole
+      Memory: 2048
+      Cpu: 512
+      ContainerDefinitions:
+        - Name: grafana-container
+          Image: !Ref ImageParameter
+          Memory: 2048
+          Cpu: 512
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: GF_SECURITY_ADMIN_PASSWORD
+              Value: !Sub "{{resolve:secretsmanager:${SecretsParameter}:SecretString}}"
+            - Name: GF_AUTH_ANONYMOUS_ENABLED
+              Value: true
+            - Name: GF_AUTH_ANONYMOUS_ORG_NAME
+              Value: Main Org.
+            - Name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              Value: Viewer
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub "/ecs/${AppNameParameter}-grafana"
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: "dashboard"
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${AppNameParameter}-grafana"
+
+  EcsSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: ECS Security Group
+      VpcId: !Ref VpcId
+
+  EcsSecurityGroupHTTPinbound:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref EcsSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 3000
+      CidrIp: 0.0.0.0/0
+
+  EcsSecurityGroupHTTPSinbound:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref EcsSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 3000
+      CidrIp: 0.0.0.0/0
+
+  EcsSecurityGroupGrafanaInbound:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref EcsSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3000
+      ToPort: 3000
+      CidrIp: 0.0.0.0/0
+
+  LoadBalancer:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      Name: !Sub "${AppNameParameter}-LoadBalancer"
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "30"
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - !Ref EcsSecurityGroup
+
+  LoadBalancerListener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: "80"
+      Protocol: HTTP
+
+  ECSLoadBalancerListenerRule:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    DependsOn: LoadBalancerListener
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /
+      ListenerArn: !Ref LoadBalancerListener
+      Priority: 1
+
+  TargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn: LoadBalancer
+    Properties:
+      Name: !Sub "${AppNameParameter}-TargetGroup"
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /login
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 3000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      TargetType: ip
+      VpcId: !Ref VpcId
