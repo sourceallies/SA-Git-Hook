@@ -42,9 +42,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         name: Make Artifact
         with:
-          name: ${{ matrix.name }} Release ${{ github.event.inputs.release_version }}
+          name: ${{ matrix.name }} Release
           if-no-files-found: error
-          path: Hookstaller/release.tar
+          path: Hookstaller/${{ matrix.name }}-Installer.tar
   release:
     name: Releasing
     runs-on: ubuntu-latest
