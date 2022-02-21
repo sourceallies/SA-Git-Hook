@@ -13,8 +13,19 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
   ImageParameter:
     Type: String
-    Default: grafana/grafana:8.1.7
-  SecretsParameter:
+    Default: sourceallies/commit-collective
+  DefaultDashboardParameter:
+    Type: String
+    Default: default.json
+  AdminPassSecretParameter:
+    Type: String
+  DatasourceUrlParameter:
+    Type: String
+  DatasourceUserParameter:
+    Type: String
+  DatasourceDatabaseParameter:
+    Type: String
+  DbPassSecretParameter:
     Type: String
 
 Resources:
@@ -62,13 +73,24 @@ Resources:
             - ContainerPort: 3000
           Environment:
             - Name: GF_SECURITY_ADMIN_PASSWORD
-              Value: !Sub "{{resolve:secretsmanager:${SecretsParameter}:SecretString}}"
+              Value: !Sub "{{resolve:secretsmanager:${AdminPassSecretParameter}:SecretString}}"
             - Name: GF_AUTH_ANONYMOUS_ENABLED
               Value: true
             - Name: GF_AUTH_ANONYMOUS_ORG_NAME
               Value: Main Org.
             - Name: GF_AUTH_ANONYMOUS_ORG_ROLE
               Value: Viewer
+            - Name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+              Value: !Sub "/var/lib/grafana/dashboards/${DefaultDashboardParameter}"
+            - Name: DATASOURCE_URL
+              Value: !Ref DatasourceUrlParameter
+            - Name: DATASOURCE_DB
+              Value: !Ref DatasourceDatabaseParameter
+            - Name: DATASOURCE_USER
+              Value: !Ref DatasourceUserParameter
+            - Name: DATASOURCE_PASS
+              Value: !Sub "{{resolve:secretsmanager:${DbPassSecretParameter}:SecretString}}"
+
           LogConfiguration:
             LogDriver: awslogs
             Options:

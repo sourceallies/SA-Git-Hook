@@ -1,0 +1,1124 @@
+{
+    "__inputs": [
+      {
+        "name": "PostgreSQL",
+        "label": "PostgreSQL",
+        "description": "",
+        "type": "datasource",
+        "pluginId": "postgres",
+        "pluginName": "PostgreSQL"
+      }
+    ],
+    "__requires": [
+      {
+        "type": "grafana",
+        "id": "grafana",
+        "name": "Grafana",
+        "version": "8.1.5"
+      },
+      {
+        "type": "panel",
+        "id": "piechart",
+        "name": "Pie chart",
+        "version": ""
+      },
+      {
+        "type": "datasource",
+        "id": "postgres",
+        "name": "PostgreSQL",
+        "version": "1.0.0"
+      },
+      {
+        "type": "panel",
+        "id": "stat",
+        "name": "Stat",
+        "version": ""
+      },
+      {
+        "type": "panel",
+        "id": "table",
+        "name": "Table",
+        "version": ""
+      },
+      {
+        "type": "panel",
+        "id": "text",
+        "name": "Text",
+        "version": ""
+      },
+      {
+        "type": "panel",
+        "id": "timeseries",
+        "name": "Time series",
+        "version": ""
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": false,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "panels": [
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "#3274D9",
+              "mode": "fixed"
+            },
+            "mappings": [],
+            "noValue": "0",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 9,
+          "x": 0,
+          "y": 0
+        },
+        "id": 13,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "sum"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "time_series",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  date_trunc('hour', stamp) as \"time\"\n  ,count(1)\nFROM git_metrics\nwhere $__timeFilter(stamp)\nGroup by date_trunc('hour', stamp)\nORDER BY 1",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Commits",
+        "type": "stat"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "purple",
+              "mode": "fixed"
+            },
+            "mappings": [],
+            "noValue": "0",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 8,
+          "x": 9,
+          "y": 0
+        },
+        "id": 14,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "sum"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "time_series",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  date_trunc('hour', stamp) as \"time\"\n  ,sum(files_changed)\nFROM git_metrics\nwhere $__timeFilter(stamp)\nGroup by date_trunc('hour', stamp)\nORDER BY 1",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Files Changed",
+        "type": "stat"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              }
+            },
+            "mappings": []
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 7,
+          "x": 17,
+          "y": 0
+        },
+        "id": 21,
+        "options": {
+          "displayLabels": [],
+          "legend": {
+            "displayMode": "table",
+            "placement": "right"
+          },
+          "pieType": "pie",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "/^commits$/",
+            "values": true
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "table",
+            "group": [],
+            "hide": false,
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "  SELECT\n    UNNEST(extensions) as Extention, count(1) commits\n  FROM git_metrics\n  WHERE\n    $__timeFilter(stamp)\n    and extensions <> '{}'\n  group by UNNEST(extensions)",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "stamp",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "title": "Languages",
+        "type": "piechart"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "green",
+              "mode": "fixed"
+            },
+            "mappings": [],
+            "noValue": "0",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 9,
+          "x": 0,
+          "y": 5
+        },
+        "id": 15,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "sum"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "time_series",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  date_trunc('hour', stamp) as \"time\"\n  ,sum(insertions)\nFROM git_metrics\nwhere $__timeFilter(stamp)\nGroup by date_trunc('hour', stamp)\nORDER BY 1",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Insertions",
+        "type": "stat"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "red",
+              "mode": "fixed"
+            },
+            "mappings": [],
+            "noValue": "0",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 8,
+          "x": 9,
+          "y": 5
+        },
+        "id": 16,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "sum"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "time_series",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  date_trunc('hour', stamp) as \"time\"\n  ,sum(deletions)\nFROM git_metrics\nwhere $__timeFilter(stamp)\nGroup by date_trunc('hour', stamp)\nORDER BY 1",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Deletions",
+        "type": "stat"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 9,
+              "gradientMode": "scheme",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "smooth",
+              "lineStyle": {
+                "fill": "solid"
+              },
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "files_changed"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "purple",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "insertions"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "deletions"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "commits"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "blue",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 14,
+          "x": 0,
+          "y": 10
+        },
+        "id": 18,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        },
+        "targets": [
+          {
+            "format": "time_series",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  stamp as time,\n  1 as commits,\n  files_changed,\n  insertions,\n  deletions\nFROM\n  git_metrics\nWHERE\n  $__timeFilter(stamp)\nORDER BY stamp",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "value"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "timeColumn": "time",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "title": "Changes",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 10,
+          "x": 14,
+          "y": 10
+        },
+        "id": 4,
+        "options": {
+          "showHeader": true
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "table",
+            "group": [
+              {
+                "params": [
+                  "team_name"
+                ],
+                "type": "column"
+              }
+            ],
+            "hide": false,
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  team_name AS \"Team\",\n  sum(files_changed) AS \"Files\",\n  sum(insertions) AS \"Insertions\",\n  sum(deletions) AS \"Deletions\"\nFROM git_metrics\nwhere team_name <> 'UNKNOWN'\nand $__timeFilter(stamp)\nGROUP BY team_name\nORDER BY (sum(insertions) + sum(deletions)) desc",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "deletions"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "avg"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "deletions"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "stamp",
+            "timeColumnType": "timestamp",
+            "where": []
+          }
+        ],
+        "title": "Team leaderboard last week",
+        "type": "table"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "blue",
+              "mode": "fixed"
+            },
+            "custom": {
+              "align": "left",
+              "displayMode": "color-background"
+            },
+            "mappings": [],
+            "max": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "insertions"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 209
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 5,
+          "x": 0,
+          "y": 18
+        },
+        "id": 19,
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "table",
+            "group": [
+              {
+                "params": [
+                  "source_allies_email"
+                ],
+                "type": "column"
+              }
+            ],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  username AS \"User\",\n  count(1) AS \"Commits\"\nFROM git_metrics\nWHERE username <> 'UNKNOWN'\nand $__timeFilter(stamp)\nGROUP BY username\nORDER BY count(1) desc",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "insertions"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "sum"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "insertions"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Commits Leaderboard",
+        "type": "table"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "purple",
+              "mode": "fixed"
+            },
+            "custom": {
+              "align": "left",
+              "displayMode": "color-background"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "username"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 208
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "files"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 115
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 5,
+          "x": 5,
+          "y": 18
+        },
+        "id": 12,
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "table",
+            "group": [
+              {
+                "params": [
+                  "source_allies_email"
+                ],
+                "type": "column"
+              }
+            ],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  username AS \"User\",\n  sum(files_changed) AS \"Files\"\nFROM git_metrics\nWHERE\n  username != 'UNKNOWN'\nand $__timeFilter(stamp)\nGROUP BY username\nORDER BY sum(files_changed) desc",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "avg"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "files_changed"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "stamp",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              },
+              {
+                "datatype": "varchar",
+                "name": "",
+                "params": [
+                  "source_allies_email",
+                  "!=",
+                  "'UNKNOWN'"
+                ],
+                "type": "expression"
+              }
+            ]
+          }
+        ],
+        "title": "Files Changed Leaderboard",
+        "type": "table"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "green",
+              "mode": "fixed"
+            },
+            "custom": {
+              "align": "left",
+              "displayMode": "color-background"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 5,
+          "x": 10,
+          "y": 18
+        },
+        "id": 10,
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "table",
+            "group": [
+              {
+                "params": [
+                  "source_allies_email"
+                ],
+                "type": "column"
+              }
+            ],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  username AS \"User\",\n  sum(insertions) AS \"Insertions\"\nFROM git_metrics\nWHERE username <> 'UNKNOWN'\nand $__timeFilter(stamp)\nGROUP BY username\nORDER BY sum(insertions) desc",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "insertions"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "sum"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "insertions"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Insertions Leaderboard",
+        "type": "table"
+      },
+      {
+        "datasource": "PostgreSQL",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "red",
+              "mode": "fixed"
+            },
+            "custom": {
+              "align": "left",
+              "displayMode": "color-background"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 5,
+          "x": 15,
+          "y": 18
+        },
+        "id": 8,
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "format": "table",
+            "group": [
+              {
+                "params": [
+                  "source_allies_email"
+                ],
+                "type": "column"
+              }
+            ],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  username AS \"User\",\n  sum(deletions) AS \"Deletions\"\nFROM git_metrics\nwhere username <> 'UNKNOWN'\nand $__timeFilter(stamp)\nGROUP BY username\nORDER BY sum(deletions) desc",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "deletions"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "avg"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "deletions"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "git_metrics",
+            "timeColumn": "time",
+            "where": []
+          }
+        ],
+        "title": "Deletions Leaderboard",
+        "type": "table"
+      },
+      {
+        "datasource": null,
+        "gridPos": {
+          "h": 5,
+          "w": 4,
+          "x": 20,
+          "y": 18
+        },
+        "id": 23,
+        "options": {
+          "content": "<br/><br/><br/>\r\n<img src=\"https://www.sourceallies.com/img/logo/source-allies-logo-final.png\"/>",
+          "mode": "html"
+        },
+        "pluginVersion": "8.1.5",
+        "targets": [
+          {
+            "alias": "",
+            "dimensions": {},
+            "expression": "",
+            "id": "",
+            "matchExact": true,
+            "metricName": "",
+            "namespace": "",
+            "period": "",
+            "refId": "A",
+            "region": "default",
+            "statistics": [
+              "Average"
+            ]
+          }
+        ],
+        "transparent": true,
+        "type": "text"
+      }
+    ],
+    "refresh": "",
+    "schemaVersion": 30,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Commit Collective",
+    "uid": "UWw58zv7z",
+    "version": 2
+  }
